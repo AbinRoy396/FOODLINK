@@ -1,0 +1,20 @@
+{
+    "cmake.sourceDirectory": "C:/Projects/FoodLink/food_link_app/windows/flutter",
+    "sqltools.connections": [
+        {
+            "mysqlOptions": {
+                "authProtocol": "default",
+                "enableSsl": "Disabled"
+            },
+            "ssh": "Disabled",
+            "previewLimit": 50,
+            "server": "localhost",
+            "port": 3306,
+            "driver": "MySQL",
+            "name": "foodlink",
+            "username": "root",
+            "database": "foodlink",
+            "password": ""
+        }
+    ]
+}
