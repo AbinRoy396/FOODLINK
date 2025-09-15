@@ -1,2 +1,0 @@
-C:/Projects/FoodLink/food_link_app/build/.cxx/debug/1j191e4k/x86_64/CMakeFiles/edit_cache.dir
-C:/Projects/FoodLink/food_link_app/build/.cxx/debug/1j191e4k/x86_64/CMakeFiles/rebuild_cache.dir

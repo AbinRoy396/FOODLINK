@@ -1,1 +1,0 @@
- C:\\Projects\\FoodLink\\food_link_app\\.dart_tool\\flutter_build\\39d038da651da9d9255c31c076a942e1\\native_assets.json: 
