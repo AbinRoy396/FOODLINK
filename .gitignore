@@ -1,0 +1,21 @@
+# Flutter/Dart
+.dart_tool/
+.packages
+.pub/
+build/
+*.iml
+
+# Android build outputs
+*.apk
+*.aar
+*.dex
+*.class
+*.jar
+*.so
+
+# iOS
+ios/Pods/
+ios/.symlinks/
+
+# Others
+*.log
