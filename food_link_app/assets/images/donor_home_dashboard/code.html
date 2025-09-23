@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>FoodLink Donor Dashboard</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#11d452",
+              "background-light": "#f6f8f6",
+              "background-dark": "#102216",
+            },
+            fontFamily: {
+              display: ["Work Sans"],
+            },
+            borderRadius: { DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px" },
+          },
+        },
+      };
+    </script>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings: "FILL" 1, "wght" 400, "GRAD" 0, "opsz" 24;
+      }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-display bg-background-light dark:bg-background-dark">
+<div class="flex h-screen flex-col justify-between">
+<main class="overflow-y-auto">
+<header class="sticky top-0 z-10 flex items-center justify-between border-b border-black/10 dark:border-white/10 bg-background-light/80 dark:bg-background-dark/80 p-4 backdrop-blur-sm">
+<h1 class="text-xl font-bold text-black/90 dark:text-white/90">FoodLink</h1>
+<button class="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full text-black/70 dark:text-white/70 hover:bg-black/5 dark:hover:bg-white/5">
+<span class="material-symbols-outlined text-2xl">notifications</span>
+</button>
+</header>
+<div class="p-4 sm:p-6">
+<h2 class="mb-6 text-2xl font-bold text-black/90 dark:text-white/90">Welcome, Alex</h2>
+<div class="space-y-6">
+<div class="overflow-hidden rounded-xl bg-white dark:bg-white/5 shadow-sm">
+<div class="aspect-[16/9] w-full bg-cover bg-center" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuD9yTF7w9q09iIBqm6JQzcpl1E3uM6vLG8tp5y1kpe0_qkdApCNy5OJtRKPtow_YoX-kxfeMVq-1DgGKgb9Wjj90tVLtI-DKJ1N3Hy2pC_-HoOzojeplGY7nFiz6nc7B5ug0Bdv4QH1CCDb9pKfcxw_v-kJbsfsUl7aR6kV_6IMnxHSz_AQi237QvTqLOoBzjuYMk83Lpztkx26UyPGbrqole8djuEoVhiCkqqm0R_vZKqjzt9bzwiuLoZGrEDreiWQKW8RLbti-w");'></div>
+<div class="p-4">
+<h3 class="text-lg font-bold text-black/90 dark:text-white/90">Create Donation</h3>
+<div class="mt-2 flex items-center justify-between gap-4">
+<p class="text-sm text-black/60 dark:text-white/60">Donate surplus food to those in need.</p>
+<button class="flex h-9 min-w-[80px] cursor-pointer items-center justify-center rounded-lg bg-primary px-4 text-sm font-semibold text-background-dark transition-opacity hover:opacity-90">
+<span>Start</span>
+</button>
+</div>
+</div>
+</div>
+<div class="overflow-hidden rounded-xl bg-white dark:bg-white/5 shadow-sm">
+<div class="aspect-[16/9] w-full bg-cover bg-center" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAMU4Ixe4Zv832hk65oEfE5k2i-ts5i0B-hy3f8UYaYrje7bcWP_V3cLEo_SOU5ihLEGkZO_-lgIaGO4Q3iKdtUjK-RXekPEInlQnZu3wNu7kiSFhB_Jn1zTuZ-7GMF7U_EwuNfb6tpmZA-ZZUUJNmOai3S439QRdqTA25wfq1cMoR9Y2gkdkH95x75-xUGFRQDBt98zCx7kDYvU8lovvugQrIZb-MLnRldZoqlZwux4-uBp3J8qSiY08JoEc-J5BJP-VGOysRXpQ");'></div>
+<div class="p-4">
+<h3 class="text-lg font-bold text-black/90 dark:text-white/90">My Donations</h3>
+<div class="mt-2 flex items-center justify-between gap-4">
+<p class="text-sm text-black/60 dark:text-white/60">View and manage your past donations.</p>
+<button class="flex h-9 min-w-[80px] cursor-pointer items-center justify-center rounded-lg bg-primary px-4 text-sm font-semibold text-background-dark transition-opacity hover:opacity-90">
+<span>View</span>
+</button>
+</div>
+</div>
+</div>
+<div class="overflow-hidden rounded-xl bg-white dark:bg-white/5 shadow-sm">
+<div class="aspect-[16/9] w-full bg-cover bg-center" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDgvSthH6K7qo6aMhIkhadPuLvAoKZaBtxVKLX7kFr0Ahgfcpe4kwcNK_hxK8bgnB-M2TGgr3JKsMltcewHgoKnrZg0idKG4KdreFtJLRtxU2OclWdgac4a8xlZCkQneYMsU_H-4bzJTQdaJDqwMdYJ5x5OqNa7lNDRecnHgTkzfOuDXnx513bEB1yk45V-L0JISX1SrfAUoTh_0WkIstlMrPbSZQqhVsEhSF5thJ3i8la_lf7LgSqBskGdY6_sS5BkXgyrTEkT9w");'></div>
+<div class="p-4">
+<h3 class="text-lg font-bold text-black/90 dark:text-white/90">Track Status</h3>
+<div class="mt-2 flex items-center justify-between gap-4">
+<p class="text-sm text-black/60 dark:text-white/60">Follow the journey of your donations.</p>
+<button class="flex h-9 min-w-[80px] cursor-pointer items-center justify-center rounded-lg bg-primary px-4 text-sm font-semibold text-background-dark transition-opacity hover:opacity-90">
+<span>Track</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<nav class="sticky bottom-0 z-10 border-t border-black/10 dark:border-white/10 bg-background-light/80 dark:bg-background-dark/80 px-2 pb-3 pt-2 backdrop-blur-sm">
+<div class="flex justify-around">
+<a class="flex flex-1 flex-col items-center justify-center gap-1.5 rounded-lg py-1 text-primary" href="#">
+<span class="material-symbols-outlined text-2xl">home</span>
+<span class="text-[11px] font-semibold">Home</span>
+</a>
+<a class="flex flex-1 flex-col items-center justify-center gap-1.5 rounded-lg py-1 text-black/60 dark:text-white/60 hover:bg-black/5 dark:hover:bg-white/5" href="#">
+<span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 0;">volunteer_activism</span>
+<span class="text-[11px] font-medium">Donations</span>
+</a>
+<a class="flex flex-1 flex-col items-center justify-center gap-1.5 rounded-lg py-1 text-black/60 dark:text-white/60 hover:bg-black/5 dark:hover:bg-white/5" href="#">
+<span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 0;">local_shipping</span>
+<span class="text-[11px] font-medium">Track</span>
+</a>
+<a class="flex flex-1 flex-col items-center justify-center gap-1.5 rounded-lg py-1 text-black/60 dark:text-white/60 hover:bg-black/5 dark:hover:bg-white/5" href="#">
+<span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 0;">person</span>
+<span class="text-[11px] font-medium">Profile</span>
+</a>
+</div>
+</nav>
+</div>
+
+</body></html>

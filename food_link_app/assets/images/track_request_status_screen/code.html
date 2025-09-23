@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>FoodLink Request Status</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#11d452",
+              "background-light": "#f6f8f6",
+              "background-dark": "#102216",
+              "foreground-light": "#111813",
+              "foreground-dark": "#e3e3e3",
+              "subtle-light": "#6b7280",
+              "subtle-dark": "#9ca3af",
+              "border-light": "#dbe6df",
+              "border-dark": "#2a3a31",
+            },
+            fontFamily: {
+              "display": ["Work Sans"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+      .timeline-item:not(:last-child) .timeline-connector {
+        height: calc(100% - 1.5rem);
+      }
+      .timeline-item:last-child .timeline-connector {
+        height: 0;
+      }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display">
+<div class="relative flex h-screen w-full flex-col justify-between overflow-x-hidden">
+<div class="flex-grow">
+<header class="bg-background-light dark:bg-background-dark p-4 pb-2">
+<div class="flex items-center justify-between">
+<button class="text-foreground-light dark:text-foreground-dark p-2">
+<svg fill="currentColor" height="24" viewBox="0 0 256 256" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M224,128a8,8,0,0,1-8,8H59.31l58.35,58.34a8,8,0,0,1-11.32,11.32l-72-72a8,8,0,0,1,0-11.32l72-72a8,8,0,0,1,11.32,11.32L59.31,120H216A8,8,0,0,1,224,128Z"></path></svg>
+</button>
+<h1 class="text-lg font-bold text-foreground-light dark:text-foreground-dark flex-1 text-center">My Requests</h1>
+<div class="w-10"></div> 
+</div>
+</header>
+<nav class="border-b border-border-light dark:border-border-dark">
+<div class="flex justify-around px-2">
+<a class="flex flex-col items-center gap-2 border-b-2 border-primary py-3 px-2 w-1/4" href="#">
+<span class="text-sm font-bold text-primary">Requested</span>
+</a>
+<a class="flex flex-col items-center gap-2 border-b-2 border-transparent py-3 px-2 w-1/4" href="#">
+<span class="text-sm font-medium text-subtle-light dark:text-subtle-dark">Matched</span>
+</a>
+<a class="flex flex-col items-center gap-2 border-b-2 border-transparent py-3 px-2 w-1/4" href="#">
+<span class="text-sm font-medium text-subtle-light dark:text-subtle-dark">Fulfilled</span>
+</a>
+<a class="flex flex-col items-center gap-2 border-b-2 border-transparent py-3 px-2 w-1/4" href="#">
+<span class="text-sm font-medium text-subtle-light dark:text-subtle-dark">Cancelled</span>
+</a>
+</div>
+</nav>
+<div class="p-6">
+<div class="space-y-0">
+<div class="flex timeline-item">
+<div class="flex flex-col items-center mr-4">
+<div>
+<div class="flex items-center justify-center w-8 h-8 rounded-full bg-primary">
+<svg fill="#102216" height="16" viewBox="0 0 256 256" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M229.66,77.66l-128,128a8,8,0,0,1-11.32,0l-56-56a8,8,0,0,1,11.32-11.32L96,188.69,218.34,66.34a8,8,0,0,1,11.32,11.32Z"></path></svg>
+</div>
+</div>
+<div class="w-px flex-grow bg-border-light dark:bg-border-dark timeline-connector"></div>
+</div>
+<div>
+<h3 class="text-base font-bold text-foreground-light dark:text-foreground-dark">Request Submitted</h3>
+<p class="text-sm text-subtle-light dark:text-subtle-dark mt-1">June 15, 2024</p>
+</div>
+</div>
+<div class="flex timeline-item">
+<div class="flex flex-col items-center mr-4">
+<div>
+<div class="flex items-center justify-center w-8 h-8 rounded-full bg-primary/20 dark:bg-primary/30">
+<div class="w-3 h-3 rounded-full bg-primary"></div>
+</div>
+</div>
+<div class="w-px flex-grow bg-border-light dark:bg-border-dark timeline-connector"></div>
+</div>
+<div>
+<h3 class="text-base font-bold text-foreground-light dark:text-foreground-dark">Request Matched</h3>
+<p class="text-sm text-subtle-light dark:text-subtle-dark mt-1">Pending</p>
+</div>
+</div>
+<div class="flex timeline-item">
+<div class="flex flex-col items-center mr-4">
+<div>
+<div class="flex items-center justify-center w-8 h-8 rounded-full bg-background-light dark:bg-background-dark border-2 border-border-light dark:border-border-dark">
+</div>
+</div>
+<div class="w-px flex-grow bg-border-light dark:bg-border-dark timeline-connector"></div>
+</div>
+<div>
+<h3 class="text-base font-medium text-subtle-light dark:text-subtle-dark">Food Delivered</h3>
+<p class="text-sm text-subtle-light dark:text-subtle-dark mt-1"></p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<footer class="sticky bottom-0 bg-background-light dark:bg-background-dark border-t border-border-light dark:border-border-dark">
+<div class="flex justify-around items-center px-2 py-2">
+<a class="flex flex-col items-center justify-center gap-1 text-center w-1/4 text-subtle-light dark:text-subtle-dark" href="#">
+<svg fill="currentColor" height="24" viewBox="0 0 256 256" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M218.83,103.77l-80-75.48a1.14,1.14,0,0,1-.11-.11,16,16,0,0,0-21.53,0l-.11.11L37.17,103.77A16,16,0,0,0,32,115.55V208a16,16,0,0,0,16,16H96a16,16,0,0,0,16-16V160h32v48a16,16,0,0,0,16,16h48a16,16,0,0,0,16-16V115.55A16,16,0,0,0,218.83,103.77ZM208,208H160V160a16,16,0,0,0-16-16H112a16,16,0,0,0-16,16v48H48V115.55l.11-.1L128,40l79.9,75.43.11.1Z"></path></svg>
+<span class="text-xs font-medium">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center gap-1 text-center w-1/4 text-subtle-light dark:text-subtle-dark" href="#">
+<svg fill="currentColor" height="24" viewBox="0 0 256 256" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M230.33,141.06a24.34,24.34,0,0,0-18.61-4.77C230.5,117.33,240,98.48,240,80c0-26.47-21.29-48-47.46-48A47.58,47.58,0,0,0,156,48.75,47.58,47.58,0,0,0,119.46,32C93.29,32,72,53.53,72,80c0,11,3.24,21.69,10.06,33a31.87,31.87,0,0,0-14.75,8.4L44.69,144H16A16,16,0,0,0,0,160v40a16,16,0,0,0,16,16H120a7.93,7.93,0,0,0,1.94-.24l64-16a6.94,6.94,0,0,0,1.19-.4L226,182.82l.44-.2a24.6,24.6,0,0,0,3.93-41.56ZM119.46,48A31.15,31.15,0,0,1,148.6,67a8,8,0,0,0,14.8,0,31.15,31.15,0,0,1,29.14-19C209.59,48,224,62.65,224,80c0,19.51-15.79,41.58-45.66,63.9l-11.09,2.55A28,28,0,0,0,140,112H100.68C92.05,100.36,88,90.12,88,80,88,62.65,102.41,48,119.46,48ZM16,160H40v40H16Zm203.43,8.21-38,16.18L119,200H56V155.31l22.63-22.62A15.86,15.86,0,0,1,89.94,128H140a12,12,0,0,1,0,24H112a8,8,0,0,0,0,16h32a8.32,8.32,0,0,0,1.79-.2l67-15.41.31-.08a8.6,8.6,0,0,1,6.3,15.9Z"></path></svg>
+<span class="text-xs font-medium">Donations</span>
+</a>
+<a class="flex flex-col items-center justify-center gap-1 text-center w-1/4 text-primary" href="#">
+<svg fill="currentColor" height="24" viewBox="0 0 256 256" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M208,32H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32Zm0,176H48V168H76.69L96,187.32A15.89,15.89,0,0,0,107.31,192h41.38A15.86,15.86,0,0,0,160,187.31L179.31,168H208v40Z"></path></svg>
+<span class="text-xs font-bold">My Requests</span>
+</a>
+<a class="flex flex-col items-center justify-center gap-1 text-center w-1/4 text-subtle-light dark:text-subtle-dark" href="#">
+<svg fill="currentColor" height="24" viewBox="0 0 256 256" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M230.92,212c-15.23-26.33-38.7-45.21-66.09-54.16a72,72,0,1,0-73.66,0C63.78,166.78,40.31,185.66,25.08,212a8,8,0,1,0,13.85,8c18.84-32.56,52.14-52,89.07-52s70.23,19.44,89.07,52a8,8,0,1,0,13.85-8ZM72,96a56,56,0,1,1,56,56A56.06,56.06,0,0,1,72,96Z"></path></svg>
+<span class="text-xs font-medium">Profile</span>
+</a>
+</div>
+<div class="h-safe-area-bottom bg-background-light dark:bg-background-dark"></div>
+</footer>
+</div>
+
+</body></html>

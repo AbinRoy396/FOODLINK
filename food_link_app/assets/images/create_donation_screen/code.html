@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>New Donation - FoodLink</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#11d452",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#102216",
+                        "text-light": "#102216",
+                        "text-dark": "#f6f8f6",
+                        "subtle-light": "#dbe6df",
+                        "subtle-dark": "#2a3c32",
+                        "placeholder-light": "#61896f",
+                        "placeholder-dark": "#94b0a1",
+                    },
+                    fontFamily: {
+                        "display": ["Work Sans"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "0.75rem",
+                        "xl": "1rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .form-select {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2361896f' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.5rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+            padding-right: 2.5rem;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+        .dark .form-select {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2394b0a1' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-display bg-background-light dark:bg-background-dark">
+<div class="flex flex-col h-screen justify-between">
+<header class="p-4">
+<div class="flex items-center justify-between">
+<button class="text-text-light dark:text-text-dark">
+<span class="material-symbols-outlined">close</span>
+</button>
+<h1 class="text-lg font-bold text-text-light dark:text-text-dark">New Donation</h1>
+<div class="w-6"></div>
+</div>
+</header>
+<main class="flex-grow px-4 space-y-6">
+<div class="space-y-2">
+<label class="text-sm font-medium text-text-light/80 dark:text-text-dark/80" for="food-type">Food Type</label>
+<select class="form-select w-full rounded-lg border-subtle-light dark:border-subtle-dark bg-background-light dark:bg-subtle-dark text-text-light dark:text-text-dark placeholder-placeholder-light dark:placeholder-placeholder-dark focus:ring-primary/50 focus:border-primary/50 block p-4" id="food-type">
+<option>Fruits &amp; Vegetables</option>
+<option>Packaged Meals</option>
+<option>Bakery Items</option>
+<option>Dairy Products</option>
+</select>
+</div>
+<div class="space-y-2">
+<label class="text-sm font-medium text-text-light/80 dark:text-text-dark/80" for="quantity">Quantity</label>
+<input class="form-input w-full rounded-lg border-subtle-light dark:border-subtle-dark bg-background-light dark:bg-subtle-dark text-text-light dark:text-text-dark placeholder-placeholder-light dark:placeholder-placeholder-dark focus:ring-primary/50 focus:border-primary/50 block p-4" id="quantity" placeholder="e.g., 5 kg" type="text"/>
+</div>
+<div class="space-y-2">
+<label class="text-sm font-medium text-text-light/80 dark:text-text-dark/80" for="pickup-address">Pickup Address</label>
+<input class="form-input w-full rounded-lg border-subtle-light dark:border-subtle-dark bg-background-light dark:bg-subtle-dark text-text-light dark:text-text-dark placeholder-placeholder-light dark:placeholder-placeholder-dark focus:ring-primary/50 focus:border-primary/50 block p-4" id="pickup-address" placeholder="Enter full address" type="text"/>
+</div>
+<div class="space-y-2">
+<label class="text-sm font-medium text-text-light/80 dark:text-text-dark/80" for="expiry-time">Expiry Time</label>
+<input class="form-input w-full rounded-lg border-subtle-light dark:border-subtle-dark bg-background-light dark:bg-subtle-dark text-text-light dark:text-text-dark placeholder-placeholder-light dark:placeholder-placeholder-dark focus:ring-primary/50 focus:border-primary/50 block p-4" id="expiry-time" placeholder="Best before date/time" type="text"/>
+</div>
+</main>
+<footer class="p-4 pb-8">
+<button class="w-full bg-primary text-background-dark font-bold py-4 rounded-lg text-base hover:bg-primary/90 transition-colors">
+                Create Donation
+            </button>
+</footer>
+</div>
+
+
+</body></html>

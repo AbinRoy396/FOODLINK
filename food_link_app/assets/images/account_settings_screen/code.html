@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>FoodLink Settings</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link crossorigin="" href="https://fonts.gstatic.com/" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#11d452",
+            "background-light": "#f6f8f6",
+            "background-dark": "#102216",
+          },
+          fontFamily: {
+            "display": ["Work Sans"]
+          },
+          borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings:
+      'FILL' 0,
+      'wght' 400,
+      'GRAD' 0,
+      'opsz' 24
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-black dark:text-white">
+<div class="relative flex h-auto min-h-screen w-full flex-col justify-between overflow-x-hidden">
+<div class="flex-grow">
+<header class="flex items-center justify-between p-4 bg-background-light dark:bg-background-dark border-b border-black/10 dark:border-white/10">
+<button class="p-2">
+<span class="material-symbols-outlined text-black dark:text-white">arrow_back</span>
+</button>
+<h1 class="text-xl font-bold text-center flex-1 text-black dark:text-white">Settings</h1>
+<div class="w-10"></div>
+</header>
+<main class="p-4 space-y-8">
+<section>
+<h2 class="text-lg font-bold mb-4 text-black dark:text-white">Account</h2>
+<div class="space-y-2">
+<a class="flex items-center justify-between p-4 bg-white/80 dark:bg-black/20 rounded-lg" href="#">
+<span class="text-base text-black dark:text-white">Change Password</span>
+<span class="material-symbols-outlined text-black/50 dark:text-white/50">chevron_right</span>
+</a>
+<a class="flex items-center justify-between p-4 bg-white/80 dark:bg-black/20 rounded-lg" href="#">
+<span class="text-base text-red-500">Delete Account</span>
+<span class="material-symbols-outlined text-black/50 dark:text-white/50">chevron_right</span>
+</a>
+</div>
+</section>
+<section>
+<h2 class="text-lg font-bold mb-4 text-black dark:text-white">Social Accounts</h2>
+<div class="space-y-2">
+<a class="flex items-center justify-between p-4 bg-white/80 dark:bg-black/20 rounded-lg" href="#">
+<span class="text-base text-black dark:text-white">Link Facebook</span>
+<span class="material-symbols-outlined text-black/50 dark:text-white/50">chevron_right</span>
+</a>
+<a class="flex items-center justify-between p-4 bg-white/80 dark:bg-black/20 rounded-lg" href="#">
+<span class="text-base text-black dark:text-white">Link Instagram</span>
+<span class="material-symbols-outlined text-black/50 dark:text-white/50">chevron_right</span>
+</a>
+</div>
+</section>
+</main>
+</div>
+<footer class="sticky bottom-0 bg-background-light dark:bg-background-dark border-t border-black/10 dark:border-white/10">
+<nav class="flex justify-around items-center p-2">
+<a class="flex flex-col items-center gap-1 text-black/60 dark:text-white/60" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="text-xs font-medium">Home</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-black/60 dark:text-white/60" href="#">
+<span class="material-symbols-outlined">volunteer_activism</span>
+<span class="text-xs font-medium">Donations</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-black/60 dark:text-white/60" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="text-xs font-medium">Requests</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-black/60 dark:text-white/60" href="#">
+<span class="material-symbols-outlined">receipt_long</span>
+<span class="text-xs font-medium">Transactions</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-primary" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">person</span>
+<span class="text-xs font-bold">Profile</span>
+</a>
+</nav>
+</footer>
+</div>
+
+</body></html>

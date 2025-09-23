@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>FoodLink Receiver Registration</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#11d452",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#102216",
+                        "foreground-light": "#111813",
+                        "foreground-dark": "#e3f0e8",
+                        "muted-light": "#61896f",
+                        "muted-dark": "#8fa89a",
+                        "input-light": "#f0f4f2",
+                        "input-dark": "#1a3825"
+                    },
+                    fontFamily: {
+                        "display": ["Work Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "0.75rem",
+                        "xl": "1rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .form-input::placeholder {
+            color: #61896f;
+        }
+        .dark .form-input::placeholder {
+            color: #8fa89a;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-foreground-light dark:text-foreground-dark">
+<div class="flex flex-col h-screen justify-between p-4">
+<header class="flex items-center justify-between py-2">
+<button class="text-foreground-light dark:text-foreground-dark">
+<svg fill="currentColor" height="24" viewBox="0 0 256 256" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="M224,128a8,8,0,0,1-8,8H59.31l58.35,58.34a8,8,0,0,1-11.32,11.32l-72-72a8,8,0,0,1,0-11.32l72-72a8,8,0,0,1,11.32,11.32L59.31,120H216A8,8,0,0,1,224,128Z"></path>
+</svg>
+</button>
+<h1 class="text-lg font-bold text-foreground-light dark:text-foreground-dark">Register</h1>
+<div class="w-6"></div>
+</header>
+<main class="flex-grow pt-8">
+<form action="#" class="space-y-6" method="POST">
+<div>
+<label class="sr-only" for="full-name">Full Name</label>
+<input class="form-input w-full bg-input-light dark:bg-input-dark border-none rounded-lg p-4 text-foreground-light dark:text-foreground-dark focus:ring-primary focus:border-primary" id="full-name" name="full-name" placeholder="Full Name" type="text"/>
+</div>
+<div>
+<label class="sr-only" for="email">Email</label>
+<input class="form-input w-full bg-input-light dark:bg-input-dark border-none rounded-lg p-4 text-foreground-light dark:text-foreground-dark focus:ring-primary focus:border-primary" id="email" name="email" placeholder="Email" type="email"/>
+</div>
+<div>
+<label class="sr-only" for="phone">Phone</label>
+<input class="form-input w-full bg-input-light dark:bg-input-dark border-none rounded-lg p-4 text-foreground-light dark:text-foreground-dark focus:ring-primary focus:border-primary" id="phone" name="phone" placeholder="Phone" type="tel"/>
+</div>
+<div>
+<label class="sr-only" for="delivery-address">Delivery Address</label>
+<input class="form-input w-full bg-input-light dark:bg-input-dark border-none rounded-lg p-4 text-foreground-light dark:text-foreground-dark focus:ring-primary focus:border-primary" id="delivery-address" name="delivery-address" placeholder="Delivery Address" type="text"/>
+</div>
+<button class="w-full bg-primary text-background-dark font-bold py-4 px-4 rounded-lg hover:bg-primary/90 transition-colors" type="submit">
+                    Register
+                </button>
+</form>
+</main>
+<footer class="text-center pb-4">
+<a class="text-sm text-muted-light dark:text-muted-dark underline" href="#">Already have an account? Sign in</a>
+</footer>
+</div>
+
+</body></html>
