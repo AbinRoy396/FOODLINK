@@ -19,3 +19,7 @@ ios/.symlinks/
 
 # Others
 *.log
+
+# Ignore build artifacts
+food_link_app/build/
+food_link_app/.dart_tool/
