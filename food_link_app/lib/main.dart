@@ -1,11 +1,54 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:shimmer/shimmer.dart';
+
 import 'services/api_service.dart';
 import 'user_state.dart';
 import 'models/user_model.dart';
 import 'models/donation_model.dart';
 import 'models/request_model.dart';
+
+// --- Constants ---
+class AppStrings {
+  static const String appName = 'FoodLink';
+  static const String appTagline = 'Save Food, Share Love';
+  
+  // Routes
+  static const String routeHome = '/';
+  static const String routeRoleSelection = '/role_selection';
+  static const String routeLogin = '/login';
+  static const String routeRegisterDonor = '/register_donor';
+  static const String routeRegisterNGO = '/register_ngo';
+  static const String routeRegisterReceiver = '/register_receiver';
+  static const String routeDonorDashboard = '/donor_dashboard';
+  static const String routeReceiverDashboard = '/receiver_dashboard';
+  static const String routeNGODashboard = '/ngo_dashboard';
+  static const String routeCreateDonation = '/create_donation';
+  static const String routeViewDonations = '/view_donations';
+  static const String routeCreateRequest = '/create_request';
+  static const String routeTrackRequestStatus = '/track_request_status';
+  static const String routeDonorProfile = '/profile_donor';
+  static const String routeNGOProfile = '/profile_ngo';
+  static const String routeReceiverProfile = '/profile_receiver';
+
+  // User Roles
+  static const String roleDonor = 'Donor';
+  static const String roleNGO = 'NGO';
+  static const String roleReceiver = 'Receiver';
+
+  // Statuses
+  static const String statusPending = 'Pending';
+  static const String statusVerified = 'Verified';
+  static const String statusAllocated = 'Allocated';
+  static const String statusDelivered = 'Delivered';
+  static const String statusExpired = 'Expired';
+  static const String statusRequested = 'Requested';
+  static const String statusMatched = 'Matched';
+  static const String statusFulfilled = 'Fulfilled';
+  static const String statusCancelled = 'Cancelled';
+}
 
 // --- Theme and Colors ---
 class AppColors {
@@ -24,6 +67,13 @@ class AppColors {
   static const Color cardDark = Color(0xFF182E1F);
   static const Color iconBackgroundLight = Color(0xFFE8F0EB);
   static const Color iconBackgroundDark = Color(0xFF23402C);
+  
+  // Status Colors
+  static const Color statusPending = Color(0xFFFF9800);
+  static const Color statusVerified = Color(0xFF2196F3);
+  static const Color statusAllocated = Color(0xFF9C27B0);
+  static const Color statusDelivered = Color(0xFF4CAF50);
+  static const Color statusExpired = Color(0xFFF44336);
 }
 
 ThemeData buildAppTheme(BuildContext context) {
@@ -77,12 +127,272 @@ ThemeData buildAppTheme(BuildContext context) {
   );
 }
 
+// --- Reusable Widgets ---
+class CustomCachedImage extends StatelessWidget {
+  final String imageUrl;
+  final double? width, height;
+  final BoxFit fit;
+  final Widget? placeholder;
+
+  const CustomCachedImage({
+    super.key,
+    required this.imageUrl,
+    this.width,
+    this.height,
+    this.fit = BoxFit.cover,
+    this.placeholder,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return CachedNetworkImage(
+      imageUrl: imageUrl,
+      width: width,
+      height: height,
+      fit: fit,
+      placeholder: (context, url) => placeholder ?? Shimmer.fromColors(
+        baseColor: AppColors.borderLight,
+        highlightColor: AppColors.backgroundLight,
+        child: Container(
+          color: AppColors.iconBackgroundLight,
+        ),
+      ),
+      errorWidget: (context, url, error) => Container(
+        color: AppColors.iconBackgroundLight,
+        child: const Icon(Icons.broken_image, color: AppColors.subtleLight),
+      ),
+    );
+  }
+}
+
+class DashboardCard extends StatelessWidget {
+  final String title;
+  final String description;
+  final String imageUrl;
+  final String buttonText;
+  final VoidCallback onPressed;
+
+  const DashboardCard({
+    super.key,
+    required this.title,
+    required this.description,
+    required this.imageUrl,
+    required this.buttonText,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      elevation: 2,
+      color: AppColors.cardLight,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ClipRRect(
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+            child: CustomCachedImage(
+              imageUrl: imageUrl,
+              height: 180,
+              width: double.infinity,
+              placeholder: Shimmer.fromColors(
+                baseColor: AppColors.borderLight,
+                highlightColor: AppColors.backgroundLight,
+                child: Container(
+                  height: 180,
+                  width: double.infinity,
+                  color: AppColors.iconBackgroundLight,
+                ),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  description,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: AppColors.subtleLight,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: onPressed,
+                  style: ElevatedButton.styleFrom(
+                    minimumSize: const Size(double.infinity, 48),
+                  ),
+                  child: Text(buttonText),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class DonationListItem extends StatelessWidget {
+  final DonationModel donation;
+  final VoidCallback? onTap;
+
+  const DonationListItem({
+    super.key,
+    required this.donation,
+    this.onTap,
+  });
+
+  Color _getStatusColor(String status) {
+    switch (status) {
+      case AppStrings.statusPending:
+        return AppColors.statusPending;
+      case AppStrings.statusVerified:
+        return AppColors.statusVerified;
+      case AppStrings.statusAllocated:
+        return AppColors.statusAllocated;
+      case AppStrings.statusDelivered:
+        return AppColors.statusDelivered;
+      case AppStrings.statusExpired:
+        return AppColors.statusExpired;
+      default:
+        return AppColors.foregroundLight;
+    }
+  }
+
+  Color _getStatusBackgroundColor(String status) {
+    switch (status) {
+      case AppStrings.statusPending:
+        return AppColors.statusPending.withOpacity(0.1);
+      case AppStrings.statusVerified:
+        return AppColors.statusVerified.withOpacity(0.1);
+      case AppStrings.statusAllocated:
+        return AppColors.statusAllocated.withOpacity(0.1);
+      case AppStrings.statusDelivered:
+        return AppColors.statusDelivered.withOpacity(0.1);
+      case AppStrings.statusExpired:
+        return AppColors.statusExpired.withOpacity(0.1);
+      default:
+        return AppColors.backgroundLight;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final statusColor = _getStatusColor(donation.status);
+    final statusBgColor = _getStatusBackgroundColor(donation.status);
+
+    return Card(
+      elevation: 1,
+      color: AppColors.cardLight,
+      margin: const EdgeInsets.only(bottom: 12),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: Row(
+            children: [
+              Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  color: AppColors.iconBackgroundLight,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.fastfood, size: 30, color: AppColors.subtleLight),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      donation.foodType,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Quantity: ${donation.quantity}',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: AppColors.subtleLight,
+                      ),
+                    ),
+                    Text(
+                      'Pickup: ${donation.pickupAddress}',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: AppColors.subtleLight,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 16),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: statusBgColor,
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                    child: Text(
+                      donation.status,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: statusColor,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    donation.createdAt.split('T').first,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: AppColors.subtleLight,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// --- State Preservation Mixin ---
+mixin StatePreservationMixin<T extends StatefulWidget> on State<T> {
+  @override
+  bool get wantKeepAlive => true;
+}
+
 // --- Main App Widget ---
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(
-    ChangeNotifierProvider(
-      create: (context) => UserState()..loadUser(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => UserState()..loadUser()),
+      ],
       child: const FoodLinkApp(),
     ),
   );
@@ -94,36 +404,26 @@ class FoodLinkApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'FoodLink',
+      title: AppStrings.appName,
       theme: buildAppTheme(context),
-      initialRoute: '/',
+      initialRoute: AppStrings.routeHome,
       routes: {
-        '/': (context) => const FoodLinkSplashScreen(),
-        '/role_selection': (context) => const UserRoleSelectionScreen(),
-        '/login': (context) => const LoginScreen(),
-        '/register_donor': (context) => const DonorRegistrationScreen(),
-        '/register_ngo': (context) => const NGORegistrationScreen(),
-        '/register_receiver': (context) => const ReceiverRegistrationScreen(),
-        '/donor_dashboard': (context) => const DonorHomeDashboard(),
-        '/receiver_dashboard': (context) => const ReceiverHomeDashboard(),
-        '/ngo_dashboard': (context) => const NGOHomeDashboard(),
-        '/create_donation': (context) => const CreateDonationScreen(),
-        '/view_donations': (context) => ViewDonationsScreen(),
-        '/create_request': (context) => const CreateRequestScreen(),
-        '/track_request_status': (context) => const TrackRequestStatusScreen(),
-        '/verify_donations_ngo': (context) => const VerifyDonationsScreenNGO(),
-        '/allocate_requests_ngo': (context) => const AllocateRequestsScreenNGO(),
-        '/transactions_ngo': (context) => const TransactionsScreenNGO(),
-        '/feedback_ratings_ngo': (context) => const FeedbackRatingsScreenNGO(),
-        '/profile_donor': (context) => const DonorProfileScreen(),
-        '/profile_ngo': (context) => const NGOProfileScreen(),
-        '/profile_receiver': (context) => const ReceiverProfileScreen(),
-        '/general_settings': (context) => const GeneralSettingsScreen(),
-        '/app_preferences': (context) => const AppPreferencesScreen(),
-        '/notification_settings': (context) => const NotificationSettingsScreen(),
-        '/privacy_settings': (context) => const PrivacySettingsScreen(),
-        '/account_settings': (context) => const AccountSettingsScreen(),
-        '/about_us': (context) => const AboutUsScreen(),
+        AppStrings.routeHome: (context) => const FoodLinkSplashScreen(),
+        AppStrings.routeRoleSelection: (context) => const UserRoleSelectionScreen(),
+        AppStrings.routeLogin: (context) => const LoginScreen(),
+        AppStrings.routeRegisterDonor: (context) => const DonorRegistrationScreen(),
+        AppStrings.routeRegisterNGO: (context) => const NGORegistrationScreen(),
+        AppStrings.routeRegisterReceiver: (context) => const ReceiverRegistrationScreen(),
+        AppStrings.routeDonorDashboard: (context) => const DonorHomeDashboard(),
+        AppStrings.routeReceiverDashboard: (context) => const ReceiverHomeDashboard(),
+        AppStrings.routeNGODashboard: (context) => const NGOHomeDashboard(),
+        AppStrings.routeCreateDonation: (context) => const CreateDonationScreen(),
+        AppStrings.routeViewDonations: (context) => ViewDonationsScreen(),
+        AppStrings.routeCreateRequest: (context) => const CreateRequestScreen(),
+        AppStrings.routeTrackRequestStatus: (context) => const TrackRequestStatusScreen(),
+        AppStrings.routeDonorProfile: (context) => const DonorProfileScreen(),
+        AppStrings.routeNGOProfile: (context) => const NGOProfileScreen(),
+        AppStrings.routeReceiverProfile: (context) => const ReceiverProfileScreen(),
       },
     );
   }
@@ -137,33 +437,39 @@ class FoodLinkSplashScreen extends StatefulWidget {
   State<FoodLinkSplashScreen> createState() => _FoodLinkSplashScreenState();
 }
 
-class _FoodLinkSplashScreenState extends State<FoodLinkSplashScreen> {
+class _FoodLinkSplashScreenState extends State<FoodLinkSplashScreen> 
+    with StatePreservationMixin {
+  
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      final userState = context.read<UserState>();
-      await userState.loadUser();
-      if (!mounted) return;
-      if (userState.user != null) {
-        String route = '/donor_dashboard';
-        switch (userState.user!.role) {
-          case 'NGO':
-            route = '/ngo_dashboard';
-            break;
-          case 'Receiver':
-            route = '/receiver_dashboard';
-            break;
-        }
-        Navigator.pushReplacementNamed(context, route);
-      } else {
-        Future.delayed(const Duration(seconds: 2), () {
-          if (mounted) {
-            Navigator.pushReplacementNamed(context, '/role_selection');
-          }
-        });
+    _initializeApp();
+  }
+
+  Future<void> _initializeApp() async {
+    final userState = context.read<UserState>();
+    await userState.loadUser();
+    
+    if (!mounted) return;
+    
+    await Future.delayed(const Duration(seconds: 2));
+    
+    if (!mounted) return;
+    
+    if (userState.user != null) {
+      String route = AppStrings.routeDonorDashboard;
+      switch (userState.user!.role) {
+        case AppStrings.roleNGO:
+          route = AppStrings.routeNGODashboard;
+          break;
+        case AppStrings.roleReceiver:
+          route = AppStrings.routeReceiverDashboard;
+          break;
       }
-    });
+      Navigator.pushReplacementNamed(context, route);
+    } else {
+      Navigator.pushReplacementNamed(context, AppStrings.routeRoleSelection);
+    }
   }
 
   @override
@@ -175,13 +481,9 @@ class _FoodLinkSplashScreenState extends State<FoodLinkSplashScreen> {
           Positioned.fill(
             child: Opacity(
               opacity: 0.1,
-              child: Image.network(
-                'https://via.placeholder.com/400x600?text=FoodLink+Background',
+              child: CustomCachedImage(
+                imageUrl: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
                 fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) => Container(
-                  color: AppColors.backgroundLight,
-                  child: const Center(child: Icon(Icons.broken_image, size: 80, color: AppColors.subtleLight)),
-                ),
               ),
             ),
           ),
@@ -189,11 +491,19 @@ class _FoodLinkSplashScreenState extends State<FoodLinkSplashScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.fastfood, size: 120, color: AppColors.primary),
+                Container(
+                  width: 120,
+                  height: 120,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.fastfood, size: 60, color: Colors.white),
+                ),
                 const SizedBox(height: 24),
                 Text(
-                  'FoodLink',
-                  style: TextStyle(
+                  AppStrings.appName,
+                  style: GoogleFonts.workSans(
                     fontSize: 48,
                     fontWeight: FontWeight.w900,
                     color: AppColors.backgroundDark,
@@ -201,8 +511,8 @@ class _FoodLinkSplashScreenState extends State<FoodLinkSplashScreen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Save Food, Share Love',
-                  style: TextStyle(
+                  AppStrings.appTagline,
+                  style: GoogleFonts.workSans(
                     fontSize: 20,
                     fontWeight: FontWeight.w500,
                     color: AppColors.backgroundDark,
@@ -225,14 +535,8 @@ class UserRoleSelectionScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('FoodLink'),
+        title: const Text(AppStrings.appName),
         centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.help_outline),
-            onPressed: () {},
-          ),
-        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
@@ -241,17 +545,21 @@ class UserRoleSelectionScreen extends StatelessWidget {
           children: [
             Text(
               'Select Your Role',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 8),
             Text(
               'Choose your role to get started with FoodLink',
               textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.foregroundLight.withOpacity(0.7)),
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: AppColors.foregroundLight.withOpacity(0.7),
+              ),
             ),
             const SizedBox(height: 32),
             ElevatedButton(
-              onPressed: () => Navigator.pushNamed(context, '/register_donor'),
+              onPressed: () => Navigator.pushNamed(context, AppStrings.routeRegisterDonor),
               style: ElevatedButton.styleFrom(
                 minimumSize: const Size(double.infinity, 60),
                 backgroundColor: AppColors.primary,
@@ -261,7 +569,7 @@ class UserRoleSelectionScreen extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             ElevatedButton(
-              onPressed: () => Navigator.pushNamed(context, '/register_ngo'),
+              onPressed: () => Navigator.pushNamed(context, AppStrings.routeRegisterNGO),
               style: ElevatedButton.styleFrom(
                 minimumSize: const Size(double.infinity, 60),
                 backgroundColor: AppColors.primary.withOpacity(0.2),
@@ -271,7 +579,7 @@ class UserRoleSelectionScreen extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             ElevatedButton(
-              onPressed: () => Navigator.pushNamed(context, '/register_receiver'),
+              onPressed: () => Navigator.pushNamed(context, AppStrings.routeRegisterReceiver),
               style: ElevatedButton.styleFrom(
                 minimumSize: const Size(double.infinity, 60),
                 backgroundColor: AppColors.primary.withOpacity(0.2),
@@ -281,7 +589,7 @@ class UserRoleSelectionScreen extends StatelessWidget {
             ),
             const SizedBox(height: 32),
             TextButton(
-              onPressed: () => Navigator.pushNamed(context, '/login'),
+              onPressed: () => Navigator.pushNamed(context, AppStrings.routeLogin),
               child: const Text(
                 'Already have an account? Log In',
                 style: TextStyle(
@@ -292,21 +600,6 @@ class UserRoleSelectionScreen extends StatelessWidget {
             ),
           ],
         ),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: AppColors.backgroundLight,
-        selectedItemColor: AppColors.primary,
-        unselectedItemColor: AppColors.foregroundLight.withOpacity(0.6),
-        type: BottomNavigationBarType.fixed,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
-          BottomNavigationBarItem(icon: Icon(Icons.add_box), label: 'Post'),
-          BottomNavigationBarItem(icon: Icon(Icons.chat_bubble), label: 'Messages'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
-        ],
-        currentIndex: 0,
-        onTap: (index) {},
       ),
     );
   }
@@ -320,7 +613,7 @@ class LoginScreen extends StatefulWidget {
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends State<LoginScreen> with StatePreservationMixin {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -347,14 +640,14 @@ class _LoginScreenState extends State<LoginScreen> {
           await context.read<UserState>().login(loginData);
           String route = '';
           switch (_selectedRole) {
-            case 'Donor':
-              route = '/donor_dashboard';
+            case AppStrings.roleDonor:
+              route = AppStrings.routeDonorDashboard;
               break;
-            case 'NGO':
-              route = '/ngo_dashboard';
+            case AppStrings.roleNGO:
+              route = AppStrings.routeNGODashboard;
               break;
-            case 'Receiver':
-              route = '/receiver_dashboard';
+            case AppStrings.roleReceiver:
+              route = AppStrings.routeReceiverDashboard;
               break;
           }
           if (route.isNotEmpty) {
@@ -392,16 +685,33 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text('FoodLink', style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold)),
+                Text(
+                  AppStrings.appName,
+                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
                 const SizedBox(height: 8),
-                Text('Welcome back! Please log in.', style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: AppColors.subtleLight)),
+                Text(
+                  'Welcome back! Please log in.',
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    color: AppColors.subtleLight,
+                  ),
+                ),
                 const SizedBox(height: 32),
                 TextFormField(
                   controller: _emailController,
-                  decoration: const InputDecoration(hintText: 'you@example.com', labelText: 'Email'),
+                  decoration: const InputDecoration(
+                    hintText: 'you@example.com',
+                    labelText: 'Email',
+                  ),
                   validator: (value) {
-                    if (value == null || value.isEmpty) return 'Please enter your email';
-                    if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) return 'Please enter a valid email address';
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter your email';
+                    }
+                    if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
+                      return 'Please enter a valid email address';
+                    }
                     return null;
                   },
                 ),
@@ -409,15 +719,24 @@ class _LoginScreenState extends State<LoginScreen> {
                 TextFormField(
                   controller: _passwordController,
                   obscureText: true,
-                  decoration: const InputDecoration(hintText: '••••••••', labelText: 'Password'),
-                  validator: (value) => (value == null || value.isEmpty) ? 'Please enter your password' : null,
+                  decoration: const InputDecoration(
+                    hintText: '••••••••',
+                    labelText: 'Password',
+                  ),
+                  validator: (value) => 
+                      (value == null || value.isEmpty) ? 'Please enter your password' : null,
                 ),
                 const SizedBox(height: 16),
                 DropdownButtonFormField<String>(
                   value: _selectedRole,
                   decoration: const InputDecoration(labelText: 'Role'),
-                  hint: const Text('Select your role', style: TextStyle(color: AppColors.subtleLight)),
-                  items: const ['Donor', 'NGO', 'Receiver'].map((role) => DropdownMenuItem(value: role, child: Text(role))).toList(),
+                  hint: const Text(
+                    'Select your role',
+                    style: TextStyle(color: AppColors.subtleLight),
+                  ),
+                  items: const [AppStrings.roleDonor, AppStrings.roleNGO, AppStrings.roleReceiver]
+                      .map((role) => DropdownMenuItem(value: role, child: Text(role)))
+                      .toList(),
                   onChanged: (value) => setState(() => _selectedRole = value),
                   validator: (value) => value == null ? 'Please select a role' : null,
                 ),
@@ -429,8 +748,14 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 32),
                 TextButton(
-                  onPressed: () => Navigator.pushNamed(context, '/role_selection'),
-                  child: const Text('Don\'t have an account? Register', style: TextStyle(color: AppColors.subtleLight, decoration: TextDecoration.underline)),
+                  onPressed: () => Navigator.pushNamed(context, AppStrings.routeRoleSelection),
+                  child: const Text(
+                    'Don\'t have an account? Register',
+                    style: TextStyle(
+                      color: AppColors.subtleLight,
+                      decoration: TextDecoration.underline,
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -444,11 +769,14 @@ class _LoginScreenState extends State<LoginScreen> {
 // --- Registration Screens ---
 class DonorRegistrationScreen extends StatefulWidget {
   const DonorRegistrationScreen({super.key});
+
   @override
   State<DonorRegistrationScreen> createState() => _DonorRegistrationScreenState();
 }
 
-class _DonorRegistrationScreenState extends State<DonorRegistrationScreen> {
+class _DonorRegistrationScreenState extends State<DonorRegistrationScreen> 
+    with StatePreservationMixin {
+  
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
@@ -464,13 +792,13 @@ class _DonorRegistrationScreenState extends State<DonorRegistrationScreen> {
           email: _emailController.text,
           password: _passwordController.text,
           name: _nameController.text,
-          role: 'Donor',
+          role: AppStrings.roleDonor,
           address: _addressController.text,
         );
         if (registerData != null) {
           await context.read<UserState>().login(registerData);
           if (!mounted) return;
-          Navigator.pushReplacementNamed(context, '/donor_dashboard');
+          Navigator.pushReplacementNamed(context, AppStrings.routeDonorDashboard);
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Registered successfully!')),
           );
@@ -510,6 +838,7 @@ class _DonorRegistrationScreenState extends State<DonorRegistrationScreen> {
                 decoration: const InputDecoration(labelText: 'Full Name'),
                 validator: (value) => value?.isEmpty ?? true ? 'Enter name' : null,
               ),
+              const SizedBox(height: 16),
               TextFormField(
                 controller: _emailController,
                 decoration: const InputDecoration(labelText: 'Email'),
@@ -519,18 +848,24 @@ class _DonorRegistrationScreenState extends State<DonorRegistrationScreen> {
                   return null;
                 },
               ),
+              const SizedBox(height: 16),
               TextFormField(
                 controller: _passwordController,
                 obscureText: true,
                 decoration: const InputDecoration(labelText: 'Password'),
-                validator: (value) => (value == null || value.length < 6) ? 'Password must be at least 6 chars' : null,
+                validator: (value) => 
+                    (value == null || value.length < 6) ? 'Password must be at least 6 chars' : null,
               ),
+              const SizedBox(height: 16),
               TextFormField(
                 controller: _addressController,
                 decoration: const InputDecoration(labelText: 'Address (optional)'),
               ),
               const SizedBox(height: 20),
-              ElevatedButton(onPressed: _loading ? null : _register, child: _loading ? const CircularProgressIndicator() : const Text('Register')),
+              ElevatedButton(
+                onPressed: _loading ? null : _register,
+                child: _loading ? const CircularProgressIndicator() : const Text('Register'),
+              ),
             ],
           ),
         ),
@@ -541,11 +876,14 @@ class _DonorRegistrationScreenState extends State<DonorRegistrationScreen> {
 
 class NGORegistrationScreen extends StatefulWidget {
   const NGORegistrationScreen({super.key});
+
   @override
   State<NGORegistrationScreen> createState() => _NGORegistrationScreenState();
 }
 
-class _NGORegistrationScreenState extends State<NGORegistrationScreen> {
+class _NGORegistrationScreenState extends State<NGORegistrationScreen> 
+    with StatePreservationMixin {
+  
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
@@ -561,13 +899,13 @@ class _NGORegistrationScreenState extends State<NGORegistrationScreen> {
           email: _emailController.text,
           password: _passwordController.text,
           name: _nameController.text,
-          role: 'NGO',
+          role: AppStrings.roleNGO,
           address: _addressController.text,
         );
         if (registerData != null) {
           await context.read<UserState>().login(registerData);
           if (!mounted) return;
-          Navigator.pushReplacementNamed(context, '/ngo_dashboard');
+          Navigator.pushReplacementNamed(context, AppStrings.routeNGODashboard);
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Registered successfully!')),
           );
@@ -602,12 +940,39 @@ class _NGORegistrationScreenState extends State<NGORegistrationScreen> {
           key: _formKey,
           child: Column(
             children: [
-              TextFormField(controller: _nameController, decoration: const InputDecoration(labelText: 'Organization Name'), validator: (v) => v?.isEmpty ?? true ? 'Enter name' : null),
-              TextFormField(controller: _emailController, decoration: const InputDecoration(labelText: 'Email'), validator: (v) => (v == null || !RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(v)) ? 'Invalid email' : null),
-              TextFormField(controller: _passwordController, obscureText: true, decoration: const InputDecoration(labelText: 'Password'), validator: (v) => (v == null || v.length < 6) ? 'Min 6 chars' : null),
-              TextFormField(controller: _addressController, decoration: const InputDecoration(labelText: 'Address (optional)')),
+              TextFormField(
+                controller: _nameController,
+                decoration: const InputDecoration(labelText: 'Organization Name'),
+                validator: (value) => value?.isEmpty ?? true ? 'Enter name' : null,
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _emailController,
+                decoration: const InputDecoration(labelText: 'Email'),
+                validator: (value) {
+                  if (value?.isEmpty ?? true) return 'Enter email';
+                  if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value!)) return 'Invalid email';
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _passwordController,
+                obscureText: true,
+                decoration: const InputDecoration(labelText: 'Password'),
+                validator: (value) => 
+                    (value == null || value.length < 6) ? 'Password must be at least 6 chars' : null,
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _addressController,
+                decoration: const InputDecoration(labelText: 'Address (optional)'),
+              ),
               const SizedBox(height: 20),
-              ElevatedButton(onPressed: _loading ? null : _register, child: _loading ? const CircularProgressIndicator() : const Text('Register')),
+              ElevatedButton(
+                onPressed: _loading ? null : _register,
+                child: _loading ? const CircularProgressIndicator() : const Text('Register'),
+              ),
             ],
           ),
         ),
@@ -618,11 +983,14 @@ class _NGORegistrationScreenState extends State<NGORegistrationScreen> {
 
 class ReceiverRegistrationScreen extends StatefulWidget {
   const ReceiverRegistrationScreen({super.key});
+
   @override
   State<ReceiverRegistrationScreen> createState() => _ReceiverRegistrationScreenState();
 }
 
-class _ReceiverRegistrationScreenState extends State<ReceiverRegistrationScreen> {
+class _ReceiverRegistrationScreenState extends State<ReceiverRegistrationScreen> 
+    with StatePreservationMixin {
+  
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
@@ -638,13 +1006,13 @@ class _ReceiverRegistrationScreenState extends State<ReceiverRegistrationScreen>
           email: _emailController.text,
           password: _passwordController.text,
           name: _nameController.text,
-          role: 'Receiver',
+          role: AppStrings.roleReceiver,
           address: _addressController.text,
         );
         if (registerData != null) {
           await context.read<UserState>().login(registerData);
           if (!mounted) return;
-          Navigator.pushReplacementNamed(context, '/receiver_dashboard');
+          Navigator.pushReplacementNamed(context, AppStrings.routeReceiverDashboard);
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Registered successfully!')),
           );
@@ -679,12 +1047,39 @@ class _ReceiverRegistrationScreenState extends State<ReceiverRegistrationScreen>
           key: _formKey,
           child: Column(
             children: [
-              TextFormField(controller: _nameController, decoration: const InputDecoration(labelText: 'Full Name'), validator: (v) => v?.isEmpty ?? true ? 'Enter name' : null),
-              TextFormField(controller: _emailController, decoration: const InputDecoration(labelText: 'Email'), validator: (v) => (v == null || !RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(v)) ? 'Invalid email' : null),
-              TextFormField(controller: _passwordController, obscureText: true, decoration: const InputDecoration(labelText: 'Password'), validator: (v) => (v == null || v.length < 6) ? 'Min 6 chars' : null),
-              TextFormField(controller: _addressController, decoration: const InputDecoration(labelText: 'Address (optional)')),
+              TextFormField(
+                controller: _nameController,
+                decoration: const InputDecoration(labelText: 'Full Name'),
+                validator: (value) => value?.isEmpty ?? true ? 'Enter name' : null,
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _emailController,
+                decoration: const InputDecoration(labelText: 'Email'),
+                validator: (value) {
+                  if (value?.isEmpty ?? true) return 'Enter email';
+                  if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value!)) return 'Invalid email';
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _passwordController,
+                obscureText: true,
+                decoration: const InputDecoration(labelText: 'Password'),
+                validator: (value) => 
+                    (value == null || value.length < 6) ? 'Password must be at least 6 chars' : null,
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _addressController,
+                decoration: const InputDecoration(labelText: 'Address (optional)'),
+              ),
               const SizedBox(height: 20),
-              ElevatedButton(onPressed: _loading ? null : _register, child: _loading ? const CircularProgressIndicator() : const Text('Register')),
+              ElevatedButton(
+                onPressed: _loading ? null : _register,
+                child: _loading ? const CircularProgressIndicator() : const Text('Register'),
+              ),
             ],
           ),
         ),
@@ -693,24 +1088,37 @@ class _ReceiverRegistrationScreenState extends State<ReceiverRegistrationScreen>
   }
 }
 
-// --- II. Post-Authentication & Dashboard Access ---
-
-// Donor Home Dashboard
-class DonorHomeDashboard extends StatelessWidget {
+// --- Dashboard Screens ---
+class DonorHomeDashboard extends StatefulWidget {
   const DonorHomeDashboard({super.key});
 
   @override
+  State<DonorHomeDashboard> createState() => _DonorHomeDashboardState();
+}
+
+class _DonorHomeDashboardState extends State<DonorHomeDashboard> 
+    with AutomaticKeepAliveClientMixin {
+  
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
   Widget build(BuildContext context) {
+    super.build(context);
     final user = context.watch<UserState>().user;
+    
     if (user == null) {
       return const Scaffold(body: Center(child: Text('Please log in')));
     }
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('FoodLink'),
+        title: const Text(AppStrings.appName),
         actions: [
-          IconButton(icon: const Icon(Icons.notifications), onPressed: () {}),
+          IconButton(
+            icon: const Icon(Icons.notifications),
+            onPressed: () {},
+          ),
         ],
       ),
       body: SingleChildScrollView(
@@ -718,33 +1126,35 @@ class DonorHomeDashboard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Welcome, ${user.name}', style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold)),
+            Text(
+              'Welcome, ${user.name}',
+              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
             const SizedBox(height: 24),
-            _buildDashboardCard(
-              context,
+            DashboardCard(
               title: 'Create Donation',
               description: 'Donate surplus food to those in need.',
-              imageUrl: 'https://via.placeholder.com/400x200?text=Create+Donation',
+              imageUrl: 'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
               buttonText: 'Start',
-              onPressed: () => Navigator.pushNamed(context, '/create_donation'),
+              onPressed: () => Navigator.pushNamed(context, AppStrings.routeCreateDonation),
             ),
             const SizedBox(height: 16),
-            _buildDashboardCard(
-              context,
+            DashboardCard(
               title: 'My Donations',
               description: 'View and manage your donations.',
-              imageUrl: 'https://via.placeholder.com/400x200?text=My+Donations',
+              imageUrl: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
               buttonText: 'View',
-              onPressed: () => Navigator.pushNamed(context, '/view_donations'),
+              onPressed: () => Navigator.pushNamed(context, AppStrings.routeViewDonations),
             ),
             const SizedBox(height: 16),
-            _buildDashboardCard(
-              context,
+            DashboardCard(
               title: 'Track Status',
               description: 'Follow the journey of your donations.',
-              imageUrl: 'https://via.placeholder.com/400x200?text=Track+Status',
+              imageUrl: 'https://images.unsplash.com/photo-1581093458799-3b1c04a6d1a4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
               buttonText: 'Track',
-              onPressed: () => Navigator.pushNamed(context, '/track_request_status'),
+              onPressed: () => Navigator.pushNamed(context, AppStrings.routeTrackRequestStatus),
             ),
           ],
         ),
@@ -762,84 +1172,43 @@ class DonorHomeDashboard extends StatelessWidget {
         ],
         currentIndex: 0,
         onTap: (index) {
-          if (index == 3) Navigator.pushNamed(context, '/profile_donor');
+          if (index == 3) Navigator.pushNamed(context, AppStrings.routeDonorProfile);
         },
-      ),
-    );
-  }
-
-  Widget _buildDashboardCard(BuildContext context, {required String title, required String description, required String imageUrl, required String buttonText, required VoidCallback onPressed}) {
-    return Card(
-      elevation: 1,
-      color: AppColors.cardLight,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ClipRRect(
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-            child: Image.network(
-              imageUrl,
-              height: 180,
-              width: double.infinity,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) => Container(
-                height: 180,
-                width: double.infinity,
-                color: AppColors.iconBackgroundLight,
-                child: const Center(child: Icon(Icons.image_not_supported, size: 60, color: AppColors.subtleLight)),
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(title, style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
-                      const SizedBox(height: 8),
-                      Text(description, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.foregroundLight.withOpacity(0.6))),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 16),
-                ElevatedButton(
-                  onPressed: onPressed,
-                  style: ElevatedButton.styleFrom(
-                    minimumSize: const Size(80, 36),
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    textStyle: const TextStyle(fontSize: 14),
-                  ),
-                  child: Text(buttonText),
-                ),
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }
 }
 
-// Receiver Home Dashboard
-class ReceiverHomeDashboard extends StatelessWidget {
+class ReceiverHomeDashboard extends StatefulWidget {
   const ReceiverHomeDashboard({super.key});
 
   @override
+  State<ReceiverHomeDashboard> createState() => _ReceiverHomeDashboardState();
+}
+
+class _ReceiverHomeDashboardState extends State<ReceiverHomeDashboard> 
+    with AutomaticKeepAliveClientMixin {
+  
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
   Widget build(BuildContext context) {
+    super.build(context);
     final user = context.watch<UserState>().user;
+    
     if (user == null) {
       return const Scaffold(body: Center(child: Text('Please log in')));
     }
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('FoodLink'),
+        title: const Text(AppStrings.appName),
         actions: [
-          IconButton(icon: const Icon(Icons.notifications), onPressed: () {}),
+          IconButton(
+            icon: const Icon(Icons.notifications),
+            onPressed: () {},
+          ),
         ],
       ),
       body: SingleChildScrollView(
@@ -847,33 +1216,35 @@ class ReceiverHomeDashboard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Welcome, ${user.name}', style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold)),
+            Text(
+              'Welcome, ${user.name}',
+              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
             const SizedBox(height: 24),
-            _buildDashboardCard(
-              context,
+            DashboardCard(
               title: 'Request Food',
               description: 'Submit a request for food assistance.',
-              imageUrl: 'https://via.placeholder.com/400x200?text=Request+Food',
+              imageUrl: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
               buttonText: 'Request',
-              onPressed: () => Navigator.pushNamed(context, '/create_request'),
+              onPressed: () => Navigator.pushNamed(context, AppStrings.routeCreateRequest),
             ),
             const SizedBox(height: 16),
-            _buildDashboardCard(
-              context,
+            DashboardCard(
               title: 'Available Donations',
               description: 'Browse available food donations.',
-              imageUrl: 'https://via.placeholder.com/400x200?text=Available+Donations',
+              imageUrl: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
               buttonText: 'Browse',
-              onPressed: () => Navigator.pushNamed(context, '/view_donations'),
+              onPressed: () => Navigator.pushNamed(context, AppStrings.routeViewDonations),
             ),
             const SizedBox(height: 16),
-            _buildDashboardCard(
-              context,
+            DashboardCard(
               title: 'My Requests',
               description: 'View and manage your requests.',
-              imageUrl: 'https://via.placeholder.com/400x200?text=My+Requests',
+              imageUrl: 'https://images.unsplash.com/photo-1581093458799-3b1c04a6d1a4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
               buttonText: 'View',
-              onPressed: () => Navigator.pushNamed(context, '/track_request_status'),
+              onPressed: () => Navigator.pushNamed(context, AppStrings.routeTrackRequestStatus),
             ),
           ],
         ),
@@ -891,125 +1262,43 @@ class ReceiverHomeDashboard extends StatelessWidget {
         ],
         currentIndex: 0,
         onTap: (index) {
-          if (index == 3) Navigator.pushNamed(context, '/profile_receiver');
+          if (index == 3) Navigator.pushNamed(context, AppStrings.routeReceiverProfile);
         },
-      ),
-    );
-  }
-
-  Widget _buildDashboardCard(BuildContext context, {required String title, required String description, required String imageUrl, required String buttonText, required VoidCallback onPressed}) {
-    return Card(
-      elevation: 1,
-      color: AppColors.cardLight,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ClipRRect(
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-            child: Image.network(
-              imageUrl,
-              height: 180,
-              width: double.infinity,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) => Container(
-                height: 180,
-                width: double.infinity,
-                color: AppColors.iconBackgroundLight,
-                child: const Center(child: Icon(Icons.image_not_supported, size: 60, color: AppColors.subtleLight)),
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
-                const SizedBox(height: 8),
-                Text(description, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.subtleLight)),
-                const SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: onPressed,
-                  style: ElevatedButton.styleFrom(
-                    minimumSize: const Size(double.infinity, 48),
-                    textStyle: const TextStyle(fontSize: 14),
-                  ),
-                  child: Text(buttonText),
-                ),
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }
 }
 
-// NGO Home Dashboard
-class NGOHomeDashboard extends StatelessWidget {
+class NGOHomeDashboard extends StatefulWidget {
   const NGOHomeDashboard({super.key});
 
-  Widget _buildDashboardCard(BuildContext context, {required String title, required String description, required String imageUrl, required String buttonText, required VoidCallback onPressed}) {
-    return Card(
-      elevation: 1,
-      color: AppColors.cardLight,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ClipRRect(
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-            child: Image.network(
-              imageUrl,
-              height: 180,
-              width: double.infinity,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) => Container(
-                height: 180,
-                width: double.infinity,
-                color: AppColors.iconBackgroundLight,
-                child: const Center(child: Icon(Icons.image_not_supported, size: 60, color: AppColors.subtleLight)),
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
-                const SizedBox(height: 8),
-                Text(description, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.subtleLight)),
-                const SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: onPressed,
-                  style: ElevatedButton.styleFrom(
-                    minimumSize: const Size(double.infinity, 48),
-                    textStyle: const TextStyle(fontSize: 14),
-                  ),
-                  child: Text(buttonText),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  @override
+  State<NGOHomeDashboard> createState() => _NGOHomeDashboardState();
+}
+
+class _NGOHomeDashboardState extends State<NGOHomeDashboard> 
+    with AutomaticKeepAliveClientMixin {
+  
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final user = context.watch<UserState>().user;
+    
     if (user == null) {
       return const Scaffold(body: Center(child: Text('Please log in')));
     }
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('FoodLink'),
+        title: const Text(AppStrings.appName),
         actions: [
-          IconButton(icon: const Icon(Icons.notifications), onPressed: () {}),
+          IconButton(
+            icon: const Icon(Icons.notifications),
+            onPressed: () {},
+          ),
         ],
       ),
       body: SingleChildScrollView(
@@ -1017,42 +1306,35 @@ class NGOHomeDashboard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Welcome, ${user.name}', style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold)),
+            Text(
+              'Welcome, ${user.name}',
+              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
             const SizedBox(height: 24),
-            _buildDashboardCard(
-              context,
+            DashboardCard(
               title: 'Verify Donations',
               description: 'Confirm incoming donations and update inventory.',
-              imageUrl: 'https://via.placeholder.com/400x200?text=Verify+Donations',
+              imageUrl: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
               buttonText: 'Verify',
-              onPressed: () => Navigator.pushNamed(context, '/verify_donations_ngo'),
+              onPressed: () {},
             ),
             const SizedBox(height: 16),
-            _buildDashboardCard(
-              context,
+            DashboardCard(
               title: 'Allocate Requests',
               description: 'Assign food to pending requests.',
-              imageUrl: 'https://via.placeholder.com/400x200?text=Allocate+Requests',
+              imageUrl: 'https://images.unsplash.com/photo-1581093458799-3b1c04a6d1a4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
               buttonText: 'Allocate',
-              onPressed: () => Navigator.pushNamed(context, '/allocate_requests_ngo'),
+              onPressed: () {},
             ),
             const SizedBox(height: 16),
-            _buildDashboardCard(
-              context,
+            DashboardCard(
               title: 'Transactions',
               description: 'View distribution activities.',
-              imageUrl: 'https://via.placeholder.com/400x200?text=Transactions',
+              imageUrl: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
               buttonText: 'View',
-              onPressed: () => Navigator.pushNamed(context, '/transactions_ngo'),
-            ),
-            const SizedBox(height: 16),
-            _buildDashboardCard(
-              context,
-              title: 'Feedback',
-              description: 'Share experience and help improve services.',
-              imageUrl: 'https://via.placeholder.com/400x200?text=Feedback',
-              buttonText: 'Provide',
-              onPressed: () => Navigator.pushNamed(context, '/feedback_ratings_ngo'),
+              onPressed: () {},
             ),
           ],
         ),
@@ -1071,16 +1353,14 @@ class NGOHomeDashboard extends StatelessWidget {
         ],
         currentIndex: 0,
         onTap: (index) {
-          if (index == 4) Navigator.pushNamed(context, '/profile_ngo');
+          if (index == 4) Navigator.pushNamed(context, AppStrings.routeNGOProfile);
         },
       ),
     );
   }
 }
 
-// --- III. Core User Flows ---
-
-// Create Donation Screen
+// --- Donation Management Screens ---
 class CreateDonationScreen extends StatefulWidget {
   const CreateDonationScreen({super.key});
 
@@ -1088,7 +1368,9 @@ class CreateDonationScreen extends StatefulWidget {
   State<CreateDonationScreen> createState() => _CreateDonationScreenState();
 }
 
-class _CreateDonationScreenState extends State<CreateDonationScreen> {
+class _CreateDonationScreenState extends State<CreateDonationScreen> 
+    with StatePreservationMixin {
+  
   final _formKey = GlobalKey<FormState>();
   String? _foodType;
   final TextEditingController _quantityController = TextEditingController();
@@ -1112,7 +1394,7 @@ class _CreateDonationScreenState extends State<CreateDonationScreen> {
           foodType: _foodType!,
           quantity: _quantityController.text,
           pickupAddress: _pickupAddressController.text,
-          expiryTime: _expiryTimeController.text, // "YYYY-MM-DD HH:mm"
+          expiryTime: _expiryTimeController.text,
         );
         if (donation != null) {
           if (!mounted) return;
@@ -1141,7 +1423,10 @@ class _CreateDonationScreenState extends State<CreateDonationScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('New Donation'),
-        leading: IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(context)),
+        leading: IconButton(
+          icon: const Icon(Icons.close), 
+          onPressed: () => Navigator.pop(context)
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -1224,18 +1509,22 @@ class _CreateDonationScreenState extends State<CreateDonationScreen> {
   }
 }
 
-// View Donations Screen (API-backed)
 class ViewDonationsScreen extends StatefulWidget {
-  ViewDonationsScreen({super.key});
+  const ViewDonationsScreen({super.key});
 
   @override
   State<ViewDonationsScreen> createState() => _ViewDonationsScreenState();
 }
 
-class _ViewDonationsScreenState extends State<ViewDonationsScreen> {
+class _ViewDonationsScreenState extends State<ViewDonationsScreen> 
+    with AutomaticKeepAliveClientMixin {
+  
   List<DonationModel> donations = [];
   bool isLoading = true;
   String? error;
+
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void initState() {
@@ -1263,13 +1552,7 @@ class _ViewDonationsScreenState extends State<ViewDonationsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (isLoading) {
-      return Scaffold(
-        appBar: AppBar(title: const Text('My Donations')),
-        body: const Center(child: CircularProgressIndicator()),
-      );
-    }
-
+    super.build(context);
     final currentDonations = donations.where((d) => d.status != 'Delivered' && d.status != 'Expired').toList();
     final pastDonations = donations.where((d) => d.status == 'Delivered' || d.status == 'Expired').toList();
 
@@ -1278,7 +1561,10 @@ class _ViewDonationsScreenState extends State<ViewDonationsScreen> {
       child: Scaffold(
         appBar: AppBar(
           title: const Text('My Donations'),
-          leading: IconButton(icon: const Icon(Icons.arrow_back_ios_new), onPressed: () => Navigator.pop(context)),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new), 
+            onPressed: () => Navigator.pop(context)
+          ),
           bottom: const TabBar(
             labelColor: AppColors.primary,
             unselectedLabelColor: AppColors.subtleLight,
@@ -1293,129 +1579,133 @@ class _ViewDonationsScreenState extends State<ViewDonationsScreen> {
             ? Center(child: Text(error!))
             : TabBarView(
                 children: [
-                  ListView.builder(
-                    padding: const EdgeInsets.all(16),
-                    itemCount: currentDonations.length,
-                    itemBuilder: (context, index) => _buildDonationListItem(context, currentDonations[index]),
-                  ),
-                  ListView.builder(
-                    padding: const EdgeInsets.all(16),
-                    itemCount: pastDonations.length,
-                    itemBuilder: (context, index) => _buildDonationListItem(context, pastDonations[index]),
-                  ),
+                  isLoading 
+                    ? const Center(child: CircularProgressIndicator())
+                    : ListView.builder(
+                        padding: const EdgeInsets.all(16),
+                        itemCount: currentDonations.length,
+                        itemBuilder: (context, index) => DonationListItem(donation: currentDonations[index]),
+                      ),
+                  isLoading 
+                    ? const Center(child: CircularProgressIndicator())
+                    : ListView.builder(
+                        padding: const EdgeInsets.all(16),
+                        itemCount: pastDonations.length,
+                        itemBuilder: (context, index) => DonationListItem(donation: pastDonations[index]),
+                      ),
                 ],
               ),
-        bottomNavigationBar: BottomNavigationBar(
-          backgroundColor: AppColors.backgroundLight,
-          selectedItemColor: AppColors.primary,
-          unselectedItemColor: AppColors.subtleLight,
-          type: BottomNavigationBarType.fixed,
-          items: const <BottomNavigationBarItem>[
-            BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-            BottomNavigationBarItem(icon: Icon(Icons.volunteer_activism), label: 'My Donations'),
-            BottomNavigationBarItem(icon: Icon(Icons.local_shipping), label: 'Track'),
-            BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
-          ],
-          currentIndex: 1,
-          onTap: (index) {
-            if (index == 0) Navigator.pushReplacementNamed(context, '/donor_dashboard');
-            if (index == 2) Navigator.pushNamed(context, '/track_request_status');
-            if (index == 3) Navigator.pushNamed(context, '/profile_donor');
-          },
-        ),
       ),
     );
   }
+}
 
-  Widget _buildDonationListItem(BuildContext context, DonationModel donation) {
-    Color statusColor;
-    Color statusBgColor;
-    switch (donation.status) {
-      case 'Pending':
-        statusColor = Colors.orange.shade800;
-        statusBgColor = Colors.orange.shade100;
-        break;
-      case 'Verified':
-        statusColor = Colors.blue.shade800;
-        statusBgColor = Colors.blue.shade100;
-        break;
-      case 'Allocated':
-        statusColor = Colors.purple.shade800;
-        statusBgColor = Colors.purple.shade100;
-        break;
-      case 'Delivered':
-        statusColor = Colors.green.shade800;
-        statusBgColor = Colors.green.shade100;
-        break;
-      case 'Expired':
-        statusColor = Colors.red.shade800;
-        statusBgColor = Colors.red.shade100;
-        break;
-      default:
-        statusColor = AppColors.foregroundLight;
-        statusBgColor = AppColors.backgroundLight;
+// --- Profile Screens ---
+class DonorProfileScreen extends StatefulWidget {
+  const DonorProfileScreen({super.key});
+
+  @override
+  State<DonorProfileScreen> createState() => _DonorProfileScreenState();
+}
+
+class _DonorProfileScreenState extends State<DonorProfileScreen> 
+    with AutomaticKeepAliveClientMixin {
+  
+  UserModel? profile;
+  bool isLoading = true;
+
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfile();
+  }
+
+  Future<void> _loadProfile() async {
+    final user = context.read<UserState>().user;
+    if (user == null) {
+      setState(() => isLoading = false);
+      return;
+    }
+    try {
+      profile = await ApiService.getProfile(user.id);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to load profile: $e')));
+    } finally {
+      if (mounted) setState(() => isLoading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+    final userState = context.watch<UserState>();
+    final user = userState.user;
+
+    if (isLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+    if (user == null || profile == null) {
+      return const Scaffold(body: Center(child: Text('Please log in')));
     }
 
-    return Card(
-      elevation: 0,
-      color: AppColors.cardLight,
-      margin: const EdgeInsets.only(bottom: 12),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(12.0),
-        child: Row(
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Profile'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back), 
+          onPressed: () => Navigator.pop(context)
+        ),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: Container(
-                width: 56,
-                height: 56,
-                color: AppColors.iconBackgroundLight,
-                child: const Center(child: Icon(Icons.fastfood, size: 30, color: AppColors.subtleLight)),
-              ),
+            CircleAvatar(
+              radius: 64,
+              backgroundImage: const NetworkImage('https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80'),
+              onBackgroundImageError: (exception, stackTrace) => const Icon(Icons.person, size: 64),
             ),
-            const SizedBox(width: 16),
-            Expanded(
+            const SizedBox(height: 16),
+            Text(profile!.name, style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold)),
+            Text('Donor', style: Theme.of(context).textTheme.titleMedium?.copyWith(color: AppColors.subtleLight)),
+            const SizedBox(height: 32),
+            Align(alignment: Alignment.centerLeft, child: Text('Personal Information', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold))),
+            const SizedBox(height: 8),
+            Card(
+              elevation: 1,
+              color: AppColors.cardLight,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    donation.foodType,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                  ListTile(
+                    title: Text('Email', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                    subtitle: Text(profile!.email, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.subtleLight)),
                   ),
-                  Text(
-                    'Quantity: ${donation.quantity}\nPickup: ${donation.pickupAddress}',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.subtleLight),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
+                  const Divider(indent: 16, endIndent: 16, color: AppColors.backgroundLight),
+                  ListTile(
+                    title: Text('Address', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                    subtitle: Text(profile!.address ?? 'Not provided', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.subtleLight)),
                   ),
                 ],
               ),
             ),
-            const SizedBox(width: 16),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: statusBgColor,
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                  child: Text(
-                    donation.status,
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: statusColor,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(donation.createdAt.split('T').first, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.subtleLight)),
-              ],
+            const SizedBox(height: 32),
+            ElevatedButton(
+              onPressed: () async {
+                await context.read<UserState>().logout();
+                if (!mounted) return;
+                Navigator.pushNamedAndRemoveUntil(context, AppStrings.routeRoleSelection, (route) => false);
+              },
+              style: ElevatedButton.styleFrom(
+                minimumSize: const Size(double.infinity, 50),
+                backgroundColor: Colors.red.withOpacity(0.1),
+                foregroundColor: Colors.red,
+              ),
+              child: const Text('Log Out'),
             ),
           ],
         ),
@@ -1424,7 +1714,235 @@ class _ViewDonationsScreenState extends State<ViewDonationsScreen> {
   }
 }
 
-// Create Request Screen
+class NGOProfileScreen extends StatefulWidget {
+  const NGOProfileScreen({super.key});
+
+  @override
+  State<NGOProfileScreen> createState() => _NGOProfileScreenState();
+}
+
+class _NGOProfileScreenState extends State<NGOProfileScreen> 
+    with AutomaticKeepAliveClientMixin {
+  
+  UserModel? profile;
+  bool isLoading = true;
+
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfile();
+  }
+
+  Future<void> _loadProfile() async {
+    final user = context.read<UserState>().user;
+    if (user == null) {
+      setState(() => isLoading = false);
+      return;
+    }
+    try {
+      profile = await ApiService.getProfile(user.id);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to load profile: $e')));
+    } finally {
+      if (mounted) setState(() => isLoading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+    final userState = context.watch<UserState>();
+    final user = userState.user;
+
+    if (isLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+    if (user == null || profile == null) {
+      return const Scaffold(body: Center(child: Text('Please log in')));
+    }
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Profile'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back), 
+          onPressed: () => Navigator.pop(context)
+        ),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            CircleAvatar(
+              radius: 64,
+              backgroundImage: const NetworkImage('https://images.unsplash.com/photo-1560472354-b33ff0c44a43?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80'),
+              onBackgroundImageError: (exception, stackTrace) => const Icon(Icons.business, size: 64),
+            ),
+            const SizedBox(height: 16),
+            Text(profile!.name, style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold)),
+            Text('NGO • Joined ${profile!.createdAt.split('T').first}', style: Theme.of(context).textTheme.titleMedium?.copyWith(color: AppColors.subtleLight)),
+            const SizedBox(height: 32),
+            Card(
+              elevation: 1,
+              color: AppColors.cardLight,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Row(
+                  children: [
+                    Text('Notifications', style: Theme.of(context).textTheme.titleMedium),
+                    const Spacer(),
+                    Switch(value: true, onChanged: (_) {}, activeColor: AppColors.primary),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 32),
+            ElevatedButton(
+              onPressed: () async {
+                await context.read<UserState>().logout();
+                if (!mounted) return;
+                Navigator.pushNamedAndRemoveUntil(context, AppStrings.routeRoleSelection, (route) => false);
+              },
+              style: ElevatedButton.styleFrom(
+                minimumSize: const Size(double.infinity, 50),
+                backgroundColor: Colors.red.withOpacity(0.1),
+                foregroundColor: Colors.red,
+              ),
+              child: const Text('Log Out'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class ReceiverProfileScreen extends StatefulWidget {
+  const ReceiverProfileScreen({super.key});
+
+  @override
+  State<ReceiverProfileScreen> createState() => _ReceiverProfileScreenState();
+}
+
+class _ReceiverProfileScreenState extends State<ReceiverProfileScreen> 
+    with AutomaticKeepAliveClientMixin {
+  
+  UserModel? profile;
+  bool isLoading = true;
+
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfile();
+  }
+
+  Future<void> _loadProfile() async {
+    final user = context.read<UserState>().user;
+    if (user == null) {
+      setState(() => isLoading = false);
+      return;
+    }
+    try {
+      profile = await ApiService.getProfile(user.id);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to load profile: $e')));
+    } finally {
+      if (mounted) setState(() => isLoading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+    final userState = context.watch<UserState>();
+    final user = userState.user;
+
+    if (isLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+    if (user == null || profile == null) {
+      return const Scaffold(body: Center(child: Text('Please log in')));
+    }
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Profile'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new), 
+          onPressed: () => Navigator.pop(context)
+        ),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            CircleAvatar(
+              radius: 64,
+              backgroundImage: const NetworkImage('https://images.unsplash.com/photo-1494790108755-2616b612b786?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80'),
+              onBackgroundImageError: (exception, stackTrace) => const Icon(Icons.person, size: 64),
+            ),
+            const SizedBox(height: 16),
+            Text(profile!.name, style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold)),
+            Text('Receiver', style: Theme.of(context).textTheme.titleMedium?.copyWith(color: AppColors.primary)),
+            Text('Joined ${profile!.createdAt.split('T').first}', style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.subtleLight)),
+            const SizedBox(height: 32),
+            Card(
+              elevation: 1,
+              color: AppColors.cardLight,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              child: Column(
+                children: [
+                  ListTile(
+                    title: Text('Personal Information', style: Theme.of(context).textTheme.titleMedium),
+                    trailing: const Icon(Icons.chevron_right, color: AppColors.subtleLight),
+                    onTap: () {},
+                  ),
+                  const Divider(indent: 16, endIndent: 16, color: AppColors.backgroundLight),
+                  ListTile(
+                    title: Text('Request History', style: Theme.of(context).textTheme.titleMedium),
+                    trailing: const Icon(Icons.chevron_right, color: AppColors.subtleLight),
+                    onTap: () {},
+                  ),
+                  const Divider(indent: 16, endIndent: 16, color: AppColors.backgroundLight),
+                  ListTile(
+                    title: Text('Delivery Preferences', style: Theme.of(context).textTheme.titleMedium),
+                    trailing: const Icon(Icons.chevron_right, color: AppColors.subtleLight),
+                    onTap: () {},
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 32),
+            ElevatedButton(
+              onPressed: () async {
+                await context.read<UserState>().logout();
+                if (!mounted) return;
+                Navigator.pushNamedAndRemoveUntil(context, AppStrings.routeRoleSelection, (route) => false);
+              },
+              style: ElevatedButton.styleFrom(
+                minimumSize: const Size(double.infinity, 50),
+                backgroundColor: Colors.red.withOpacity(0.1),
+                foregroundColor: Colors.red,
+              ),
+              child: const Text('Log Out'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// --- Request Management Screens ---
 class CreateRequestScreen extends StatefulWidget {
   const CreateRequestScreen({super.key});
 
@@ -1432,7 +1950,9 @@ class CreateRequestScreen extends StatefulWidget {
   State<CreateRequestScreen> createState() => _CreateRequestScreenState();
 }
 
-class _CreateRequestScreenState extends State<CreateRequestScreen> {
+class _CreateRequestScreenState extends State<CreateRequestScreen> 
+    with StatePreservationMixin {
+  
   final _formKey = GlobalKey<FormState>();
   String? _foodType;
   final TextEditingController _quantityController = TextEditingController();
@@ -1485,7 +2005,10 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('New Request'),
-        leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => Navigator.pop(context)),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back), 
+          onPressed: () => Navigator.pop(context)
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -1544,7 +2067,6 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
   }
 }
 
-// Track Request Status Screen (API-backed)
 class TrackRequestStatusScreen extends StatefulWidget {
   const TrackRequestStatusScreen({super.key});
 
@@ -1552,10 +2074,15 @@ class TrackRequestStatusScreen extends StatefulWidget {
   State<TrackRequestStatusScreen> createState() => _TrackRequestStatusScreenState();
 }
 
-class _TrackRequestStatusScreenState extends State<TrackRequestStatusScreen> {
+class _TrackRequestStatusScreenState extends State<TrackRequestStatusScreen> 
+    with AutomaticKeepAliveClientMixin {
+  
   List<RequestModel> requests = [];
   bool isLoading = true;
   String? error;
+
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void initState() {
@@ -1583,6 +2110,7 @@ class _TrackRequestStatusScreenState extends State<TrackRequestStatusScreen> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final requested = requests.where((r) => r.status == 'Requested').toList();
     final matched = requests.where((r) => r.status == 'Matched').toList();
     final fulfilled = requests.where((r) => r.status == 'Fulfilled').toList();
@@ -1600,7 +2128,10 @@ class _TrackRequestStatusScreenState extends State<TrackRequestStatusScreen> {
       child: Scaffold(
         appBar: AppBar(
           title: const Text('My Requests'),
-          leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => Navigator.pop(context)),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back), 
+            onPressed: () => Navigator.pop(context)
+          ),
           bottom: const TabBar(
             isScrollable: true,
             labelColor: AppColors.primary,
@@ -1624,30 +2155,13 @@ class _TrackRequestStatusScreenState extends State<TrackRequestStatusScreen> {
                   _buildRequestList(context, cancelled),
                 ],
               ),
-        bottomNavigationBar: BottomNavigationBar(
-          backgroundColor: AppColors.backgroundLight,
-          selectedItemColor: AppColors.primary,
-          unselectedItemColor: AppColors.subtleLight,
-          type: BottomNavigationBarType.fixed,
-          items: const <BottomNavigationBarItem>[
-            BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-            BottomNavigationBarItem(icon: Icon(Icons.card_giftcard), label: 'Donations'),
-            BottomNavigationBarItem(icon: Icon(Icons.list_alt), label: 'Requests'),
-            BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
-          ],
-          currentIndex: 2,
-          onTap: (index) {
-            if (index == 0) Navigator.pushReplacementNamed(context, '/receiver_dashboard');
-            if (index == 3) Navigator.pushNamed(context, '/profile_receiver');
-          },
-        ),
       ),
     );
   }
 
   Widget _buildRequestList(BuildContext context, List<RequestModel> list) {
     if (list.isEmpty) {
-      return const Center(child: Text('No items'));
+      return const Center(child: Text('No requests found'));
     }
     return ListView.builder(
       padding: const EdgeInsets.all(16),
@@ -1667,904 +2181,6 @@ class _TrackRequestStatusScreenState extends State<TrackRequestStatusScreen> {
           ),
         );
       },
-    );
-  }
-}
-
-// --- C. NGO Flow (left mostly as UI with placeholders where backend methods may differ) ---
-
-class VerifyDonationsScreenNGO extends StatelessWidget {
-  const VerifyDonationsScreenNGO({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    // TODO: Replace with ApiService.getPendingDonationsForNGO() when available
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Donation Verification'),
-        leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => Navigator.pop(context)),
-      ),
-      body: const Center(
-        child: Text('Connect to NGO verification API to list pending donations here.'),
-      ),
-    );
-  }
-}
-
-class AllocateRequestsScreenNGO extends StatelessWidget {
-  const AllocateRequestsScreenNGO({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    // TODO: Replace with ApiService.getRequestsForAllocation() and allocation actions
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Allocate Donation'),
-        leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => Navigator.pop(context)),
-      ),
-      body: const Center(
-        child: Text('Connect to allocation API to match and allocate donations to requests.'),
-      ),
-    );
-  }
-}
-
-class TransactionsScreenNGO extends StatelessWidget {
-  const TransactionsScreenNGO({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    // TODO: Replace with ApiService.getNGOTransactions()
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Transactions'),
-        leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => Navigator.pop(context)),
-      ),
-      body: const Center(child: Text('Connect to transactions API.')),
-    );
-  }
-}
-
-class FeedbackRatingsScreenNGO extends StatelessWidget {
-  const FeedbackRatingsScreenNGO({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    // TODO: Replace with ApiService.getFeedback()
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Feedback'),
-        leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => Navigator.pop(context)),
-      ),
-      body: const Center(child: Text('Connect to feedback API.')),
-    );
-  }
-}
-
-// --- V. General & Profile Management ---
-
-// Donor Profile Screen
-class DonorProfileScreen extends StatefulWidget {
-  const DonorProfileScreen({super.key});
-
-  @override
-  State<DonorProfileScreen> createState() => _DonorProfileScreenState();
-}
-
-class _DonorProfileScreenState extends State<DonorProfileScreen> {
-  UserModel? profile;
-  bool isLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadProfile();
-  }
-
-  Future<void> _loadProfile() async {
-    final user = context.read<UserState>().user;
-    if (user == null) {
-      setState(() => isLoading = false);
-      return;
-    }
-    try {
-      profile = await ApiService.getProfile(user.id);
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to load profile: $e')));
-    } finally {
-      if (mounted) setState(() => isLoading = false);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final userState = context.watch<UserState>();
-    final user = userState.user;
-
-    if (isLoading) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    }
-    if (user == null || profile == null) {
-      return const Scaffold(body: Center(child: Text('Please log in')));
-    }
-
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Profile'),
-        leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => Navigator.pop(context)),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            CircleAvatar(
-              radius: 64,
-              backgroundImage: const NetworkImage('https://via.placeholder.com/150?text=Donor+Avatar'),
-              onBackgroundImageError: (exception, stackTrace) => const Icon(Icons.person, size: 64),
-            ),
-            const SizedBox(height: 16),
-            Text(profile!.name, style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold)),
-            Text('Donor', style: Theme.of(context).textTheme.titleMedium?.copyWith(color: AppColors.subtleLight)),
-            const SizedBox(height: 32),
-            Align(alignment: Alignment.centerLeft, child: Text('Personal Information', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold))),
-            const SizedBox(height: 8),
-            Card(
-              elevation: 1,
-              color: AppColors.cardLight,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              child: Column(
-                children: [
-                  _buildProfileInfoRow(context, 'Email', profile!.email),
-                  const Divider(indent: 16, endIndent: 16, color: AppColors.backgroundLight),
-                  _buildProfileInfoRow(context, 'Address', profile!.address ?? 'Not provided'),
-                ],
-              ),
-            ),
-            const SizedBox(height: 32),
-            ElevatedButton(
-              onPressed: () async {
-                await context.read<UserState>().logout();
-                if (!mounted) return;
-                Navigator.pushNamedAndRemoveUntil(context, '/role_selection', (route) => false);
-              },
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size(double.infinity, 50),
-                backgroundColor: Colors.red.withOpacity(0.1),
-                foregroundColor: Colors.red,
-              ),
-              child: const Text('Log Out'),
-            ),
-          ],
-        ),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: AppColors.backgroundLight,
-        selectedItemColor: AppColors.primary,
-        unselectedItemColor: AppColors.subtleLight,
-        type: BottomNavigationBarType.fixed,
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.volunteer_activism), label: 'Donations'),
-          BottomNavigationBarItem(icon: Icon(Icons.local_shipping), label: 'Track'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
-        ],
-        currentIndex: 3,
-        onTap: (index) {
-          if (index == 0) Navigator.pushReplacementNamed(context, '/donor_dashboard');
-          if (index == 1) Navigator.pushNamed(context, '/view_donations');
-          if (index == 2) Navigator.pushNamed(context, '/track_request_status');
-        },
-      ),
-    );
-  }
-
-  Widget _buildProfileInfoRow(BuildContext context, String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(label, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-          Text(value, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.subtleLight)),
-        ],
-      ),
-    );
-  }
-}
-
-// NGO Profile Screen
-class NGOProfileScreen extends StatefulWidget {
-  const NGOProfileScreen({super.key});
-
-  @override
-  State<NGOProfileScreen> createState() => _NGOProfileScreenState();
-}
-
-class _NGOProfileScreenState extends State<NGOProfileScreen> {
-  UserModel? profile;
-  bool isLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadProfile();
-  }
-
-  Future<void> _loadProfile() async {
-    final user = context.read<UserState>().user;
-    if (user == null) {
-      setState(() => isLoading = false);
-      return;
-    }
-    try {
-      profile = await ApiService.getProfile(user.id);
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to load profile: $e')));
-    } finally {
-      if (mounted) setState(() => isLoading = false);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final userState = context.watch<UserState>();
-    final user = userState.user;
-
-    if (isLoading) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    }
-    if (user == null || profile == null) {
-      return const Scaffold(body: Center(child: Text('Please log in')));
-    }
-
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Profile'),
-        leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => Navigator.pop(context)),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            CircleAvatar(
-              radius: 64,
-              backgroundImage: const NetworkImage('https://via.placeholder.com/150?text=NGO+Avatar'),
-              onBackgroundImageError: (exception, stackTrace) => const Icon(Icons.business, size: 64),
-            ),
-            const SizedBox(height: 16),
-            Text(profile!.name, style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold)),
-            Text('NGO • Joined ${profile!.createdAt.split('T').first}', style: Theme.of(context).textTheme.titleMedium?.copyWith(color: AppColors.subtleLight)),
-            const SizedBox(height: 32),
-            Card(
-              elevation: 1,
-              color: AppColors.cardLight,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Row(
-                  children: [
-                    Text('Notifications', style: Theme.of(context).textTheme.titleMedium),
-                    const Spacer(),
-                    Switch(value: true, onChanged: (_) {}, activeColor: AppColors.primary),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 32),
-            ElevatedButton(
-              onPressed: () async {
-                await context.read<UserState>().logout();
-                if (!mounted) return;
-                Navigator.pushNamedAndRemoveUntil(context, '/role_selection', (route) => false);
-              },
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size(double.infinity, 50),
-                backgroundColor: Colors.red.withOpacity(0.1),
-                foregroundColor: Colors.red,
-              ),
-              child: const Text('Log Out'),
-            ),
-          ],
-        ),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: AppColors.backgroundLight,
-        selectedItemColor: AppColors.primary,
-        unselectedItemColor: AppColors.subtleLight,
-        type: BottomNavigationBarType.fixed,
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.volunteer_activism), label: 'Donations'),
-          BottomNavigationBarItem(icon: Icon(Icons.inventory_2), label: 'Requests'),
-          BottomNavigationBarItem(icon: Icon(Icons.receipt_long), label: 'Transactions'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
-        ],
-        currentIndex: 4,
-        onTap: (index) {
-          if (index == 0) Navigator.pushReplacementNamed(context, '/ngo_dashboard');
-          if (index == 1) Navigator.pushNamed(context, '/verify_donations_ngo');
-          if (index == 2) Navigator.pushNamed(context, '/allocate_requests_ngo');
-          if (index == 3) Navigator.pushNamed(context, '/transactions_ngo');
-        },
-      ),
-    );
-  }
-}
-
-// Receiver Profile Screen
-class ReceiverProfileScreen extends StatefulWidget {
-  const ReceiverProfileScreen({super.key});
-
-  @override
-  State<ReceiverProfileScreen> createState() => _ReceiverProfileScreenState();
-}
-
-class _ReceiverProfileScreenState extends State<ReceiverProfileScreen> {
-  UserModel? profile;
-  bool isLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadProfile();
-  }
-
-  Future<void> _loadProfile() async {
-    final user = context.read<UserState>().user;
-    if (user == null) {
-      setState(() => isLoading = false);
-      return;
-    }
-    try {
-      profile = await ApiService.getProfile(user.id);
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to load profile: $e')));
-    } finally {
-      if (mounted) setState(() => isLoading = false);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final userState = context.watch<UserState>();
-    final user = userState.user;
-
-    if (isLoading) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    }
-    if (user == null || profile == null) {
-      return const Scaffold(body: Center(child: Text('Please log in')));
-    }
-
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Profile'),
-        leading: IconButton(icon: const Icon(Icons.arrow_back_ios_new), onPressed: () => Navigator.pop(context)),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            CircleAvatar(
-              radius: 64,
-              backgroundImage: const NetworkImage('https://via.placeholder.com/150?text=Receiver+Avatar'),
-              onBackgroundImageError: (exception, stackTrace) => const Icon(Icons.person, size: 64),
-            ),
-            const SizedBox(height: 16),
-            Text(profile!.name, style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold)),
-            Text('Receiver', style: Theme.of(context).textTheme.titleMedium?.copyWith(color: AppColors.primary)),
-            Text('Joined ${profile!.createdAt.split('T').first}', style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.subtleLight)),
-            const SizedBox(height: 32),
-            Card(
-              elevation: 1,
-              color: AppColors.cardLight,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              child: Column(
-                children: [
-                  _buildProfileNavigation(context, 'Personal Information', () {}),
-                  const Divider(indent: 16, endIndent: 16, color: AppColors.backgroundLight),
-                  _buildProfileNavigation(context, 'Request History', () {}),
-                  const Divider(indent: 16, endIndent: 16, color: AppColors.backgroundLight),
-                  _buildProfileNavigation(context, 'Delivery Preferences', () {}),
-                ],
-              ),
-            ),
-            const SizedBox(height: 32),
-            ElevatedButton(
-              onPressed: () async {
-                await context.read<UserState>().logout();
-                if (!mounted) return;
-                Navigator.pushNamedAndRemoveUntil(context, '/role_selection', (route) => false);
-              },
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size(double.infinity, 50),
-                backgroundColor: Colors.red.withOpacity(0.1),
-                foregroundColor: Colors.red,
-              ),
-              child: const Text('Log Out'),
-            ),
-          ],
-        ),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: AppColors.backgroundLight,
-        selectedItemColor: AppColors.primary,
-        unselectedItemColor: AppColors.subtleLight,
-        type: BottomNavigationBarType.fixed,
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.volunteer_activism), label: 'Donations'),
-          BottomNavigationBarItem(icon: Icon(Icons.list_alt), label: 'Requests'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
-        ],
-        currentIndex: 3,
-        onTap: (index) {
-          if (index == 0) Navigator.pushReplacementNamed(context, '/receiver_dashboard');
-          if (index == 2) Navigator.pushNamed(context, '/track_request_status');
-        },
-      ),
-    );
-  }
-
-  Widget _buildProfileNavigation(BuildContext context, String title, VoidCallback onTap) {
-    return ListTile(
-      title: Text(title, style: Theme.of(context).textTheme.titleMedium),
-      trailing: const Icon(Icons.chevron_right, color: AppColors.subtleLight),
-      onTap: onTap,
-    );
-  }
-}
-
-// General Settings Screen
-class GeneralSettingsScreen extends StatelessWidget {
-  const GeneralSettingsScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Settings'),
-        leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => Navigator.pop(context)),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('General', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            Card(
-              elevation: 1,
-              color: AppColors.cardLight,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              child: Column(
-                children: [
-                  _buildSettingsNavigation(context, 'App Preferences', () => Navigator.pushNamed(context, '/app_preferences')),
-                  const Divider(indent: 16, endIndent: 16, color: AppColors.borderLight),
-                  _buildSettingsNavigation(context, 'Notifications', () => Navigator.pushNamed(context, '/notification_settings')),
-                  const Divider(indent: 16, endIndent: 16, color: AppColors.borderLight),
-                  _buildSettingsNavigation(context, 'Privacy Settings', () => Navigator.pushNamed(context, '/privacy_settings')),
-                ],
-              ),
-            ),
-            const SizedBox(height: 32),
-            Text('Help & Support', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            Card(
-              elevation: 1,
-              color: AppColors.cardLight,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              child: Column(
-                children: [
-                  _buildSettingsNavigation(context, 'FAQs', () {}),
-                  const Divider(indent: 16, endIndent: 16, color: AppColors.borderLight),
-                  _buildSettingsNavigation(context, 'Contact Us', () {}),
-                  const Divider(indent: 16, endIndent: 16, color: AppColors.borderLight),
-                  _buildSettingsNavigation(context, 'User Guide', () {}),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSettingsNavigation(BuildContext context, String title, VoidCallback onTap) {
-    return ListTile(
-      title: Text(title, style: Theme.of(context).textTheme.titleMedium),
-      trailing: const Icon(Icons.chevron_right, color: AppColors.subtleLight),
-      onTap: onTap,
-    );
-  }
-}
-
-// App Preferences Screen
-class AppPreferencesScreen extends StatelessWidget {
-  const AppPreferencesScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Preferences'),
-        leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => Navigator.pop(context)),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('General', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            Card(
-              elevation: 1,
-              color: AppColors.cardLight,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              child: Column(
-                children: [
-                  _buildPreferenceNavigation(context, 'Language', 'English'),
-                  const Divider(indent: 16, endIndent: 16, color: AppColors.borderLight),
-                  _buildPreferenceNavigation(context, 'Theme', 'System Default'),
-                ],
-              ),
-            ),
-            const SizedBox(height: 32),
-            Text('Data', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            Card(
-              elevation: 1,
-              color: AppColors.cardLight,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              child: _buildPreferenceNavigation(context, 'Data Usage', 'Standard'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPreferenceNavigation(BuildContext context, String title, String currentValue) {
-    return ListTile(
-      title: Text(title, style: Theme.of(context).textTheme.titleMedium),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(currentValue, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.subtleLight)),
-          const Icon(Icons.chevron_right, size: 16, color: AppColors.subtleLight),
-        ],
-      ),
-      onTap: () {},
-    );
-  }
-}
-
-// Notification Settings Screen
-class NotificationSettingsScreen extends StatefulWidget {
-  const NotificationSettingsScreen({super.key});
-
-  @override
-  State<NotificationSettingsScreen> createState() => _NotificationSettingsScreenState();
-}
-
-class _NotificationSettingsScreenState extends State<NotificationSettingsScreen> {
-  bool _newDonations = true;
-  bool _requestUpdates = false;
-  bool _messages = true;
-  bool _quietHours = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Notifications'),
-        leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => Navigator.pop(context)),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Alerts', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            Card(
-              elevation: 1,
-              color: AppColors.cardLight,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              child: Column(
-                children: [
-                  _buildNotificationToggle(context, 'New Donations', 'Get notified when new donations are available', _newDonations, (value) => setState(() => _newDonations = value)),
-                  const Divider(indent: 16, endIndent: 16, color: AppColors.borderLight),
-                  _buildNotificationToggle(context, 'Request Updates', 'Receive updates on your donation requests', _requestUpdates, (value) => setState(() => _requestUpdates = value)),
-                  const Divider(indent: 16, endIndent: 16, color: AppColors.borderLight),
-                  _buildNotificationToggle(context, 'Messages', 'Get notified about new messages', _messages, (value) => setState(() => _messages = value)),
-                ],
-              ),
-            ),
-            const SizedBox(height: 32),
-            Text('Sound', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            Card(
-              elevation: 1,
-              color: AppColors.cardLight,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              child: ListTile(
-                title: Text('Notification Sound', style: Theme.of(context).textTheme.titleMedium),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text('Default', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.subtleLight)),
-                    const Icon(Icons.chevron_right, size: 16, color: AppColors.subtleLight),
-                  ],
-                ),
-                onTap: () {},
-              ),
-            ),
-            const SizedBox(height: 32),
-            Text('Quiet Hours', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            Card(
-              elevation: 1,
-              color: AppColors.cardLight,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              child: _buildNotificationToggle(context, 'Quiet Hours', 'Mute notifications during specific hours', _quietHours, (value) => setState(() => _quietHours = value)),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildNotificationToggle(BuildContext context, String title, String subtitle, bool value, ValueChanged<bool> onChanged) {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: Theme.of(context).textTheme.titleMedium),
-                Text(subtitle, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.subtleLight)),
-              ],
-            ),
-          ),
-          Switch(
-            value: value,
-            onChanged: onChanged,
-            activeColor: AppColors.primary,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// Privacy Settings Screen
-class PrivacySettingsScreen extends StatefulWidget {
-  const PrivacySettingsScreen({super.key});
-
-  @override
-  State<PrivacySettingsScreen> createState() => _PrivacySettingsScreenState();
-}
-
-class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
-  bool _dataSharing = true;
-  bool _locationServices = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Privacy'),
-        leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => Navigator.pop(context)),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Data Sharing', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            Card(
-              elevation: 1,
-              color: AppColors.cardLight,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              child: Column(
-                children: [
-                  _buildPrivacyToggle(context, 'Data Sharing', 'Allow FoodLink to share your data with trusted partners.', _dataSharing, (value) => setState(() => _dataSharing = value)),
-                  const Divider(indent: 16, endIndent: 16, color: AppColors.borderLight),
-                  _buildPrivacyToggle(context, 'Location Services', 'Enable location services to find nearby donors and recipients.', _locationServices, (value) => setState(() => _locationServices = value)),
-                ],
-              ),
-            ),
-            const SizedBox(height: 32),
-            Text('Personal Information', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            Card(
-              elevation: 1,
-              color: AppColors.cardLight,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              child: Column(
-                children: [
-                  _buildPrivacyNavigation(context, 'Profile Visibility', 'Control who can see your profile information.'),
-                  const Divider(indent: 16, endIndent: 16, color: AppColors.borderLight),
-                  _buildPrivacyNavigation(context, 'Donation/Request Visibility', 'Manage visibility of your donations and requests.'),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPrivacyToggle(BuildContext context, String title, String subtitle, bool value, ValueChanged<bool> onChanged) {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: Theme.of(context).textTheme.titleMedium),
-                Text(subtitle, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.subtleLight)),
-              ],
-            ),
-          ),
-          Switch(
-            value: value,
-            onChanged: onChanged,
-            activeColor: AppColors.primary,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPrivacyNavigation(BuildContext context, String title, String subtitle) {
-    return ListTile(
-      title: Text(title, style: Theme.of(context).textTheme.titleMedium),
-      subtitle: Text(subtitle, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.subtleLight)),
-      trailing: const Icon(Icons.chevron_right, color: AppColors.subtleLight),
-      onTap: () {},
-    );
-  }
-}
-
-// Account Settings Screen
-class AccountSettingsScreen extends StatelessWidget {
-  const AccountSettingsScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Settings'),
-        leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => Navigator.pop(context)),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Account', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            Card(
-              elevation: 1,
-              color: AppColors.cardLight,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              child: Column(
-                children: [
-                  _buildAccountNavigation(context, 'Change Password', () {}),
-                  const Divider(indent: 16, endIndent: 16, color: AppColors.borderLight),
-                  _buildAccountNavigation(context, 'Delete Account', () {}, isDestructive: true),
-                ],
-              ),
-            ),
-            const SizedBox(height: 32),
-            Text('Social Accounts', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            Card(
-              elevation: 1,
-              color: AppColors.cardLight,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              child: Column(
-                children: [
-                  _buildAccountNavigation(context, 'Link Facebook', () {}),
-                  const Divider(indent: 16, endIndent: 16, color: AppColors.borderLight),
-                  _buildAccountNavigation(context, 'Link Instagram', () {}),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAccountNavigation(BuildContext context, String title, VoidCallback onTap, {bool isDestructive = false}) {
-    return ListTile(
-      title: Text(
-        title,
-        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              color: isDestructive ? Colors.red : AppColors.foregroundLight,
-            ),
-      ),
-      trailing: const Icon(Icons.chevron_right, color: AppColors.subtleLight),
-      onTap: onTap,
-    );
-  }
-}
-
-// About Us Screen
-class AboutUsScreen extends StatelessWidget {
-  const AboutUsScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('About Us'),
-        leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => Navigator.pop(context)),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Our Mission', style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold, color: AppColors.primary)),
-            const SizedBox(height: 8),
-            Text(
-              'FoodLink\'s mission is to connect donors, NGOs, and receivers to reduce food waste and distribute surplus food effectively.',
-              style: Theme.of(context).textTheme.bodyLarge,
-            ),
-            const SizedBox(height: 24),
-            Text('Our Vision', style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold, color: AppColors.primary)),
-            const SizedBox(height: 8),
-            Text(
-              'A world where surplus food is efficiently distributed to those in need.',
-              style: Theme.of(context).textTheme.bodyLarge,
-            ),
-            const SizedBox(height: 24),
-            Text('Our Team', style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold, color: AppColors.primary)),
-            const SizedBox(height: 8),
-            Text(
-              'A dedicated team passionate about sustainability and social impact.',
-              style: Theme.of(context).textTheme.bodyLarge,
-            ),
-            const SizedBox(height: 24),
-            Text('Legal', style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold, color: AppColors.primary)),
-            const SizedBox(height: 8),
-            Card(
-              elevation: 1,
-              color: AppColors.cardLight,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              child: Column(
-                children: [
-                  _buildLegalLink(context, 'Terms of Service', () {}),
-                  const Divider(indent: 16, endIndent: 16, color: AppColors.borderLight),
-                  _buildLegalLink(context, 'Privacy Policy', () {}),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildLegalLink(BuildContext context, String title, VoidCallback onTap) {
-    return ListTile(
-      title: Text(title, style: Theme.of(context).textTheme.titleMedium),
-      trailing: const Icon(Icons.chevron_right, color: AppColors.subtleLight),
-      onTap: onTap,
     );
   }
 }
