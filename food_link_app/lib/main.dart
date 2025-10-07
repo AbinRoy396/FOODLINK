@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import 'services/api_service.dart';
 import 'user_state.dart';
 import 'models/user_model.dart';
 import 'models/donation_model.dart';
 import 'models/request_model.dart';
+import 'services/offline_queue.dart';
 
 // --- Constants ---
 class AppStrings {
@@ -153,7 +156,7 @@ class CustomCachedImage extends StatelessWidget {
       placeholder: (context, url) => placeholder ?? Shimmer.fromColors(
         baseColor: AppColors.borderLight,
         highlightColor: AppColors.backgroundLight,
-        child: Container(
+      child: Container(
           color: AppColors.iconBackgroundLight,
         ),
       ),
@@ -187,9 +190,9 @@ class DashboardCard extends StatelessWidget {
       elevation: 2,
       color: AppColors.cardLight,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
           ClipRRect(
             borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
             child: CustomCachedImage(
@@ -209,33 +212,33 @@ class DashboardCard extends StatelessWidget {
           ),
           Padding(
             padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                 const SizedBox(height: 8),
-                Text(
-                  description,
+                        Text(
+                          description,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: AppColors.subtleLight,
-                  ),
-                ),
-                const SizedBox(height: 16),
+                          ),
+              ),
+              const SizedBox(height: 16),
                 ElevatedButton(
                   onPressed: onPressed,
                   style: ElevatedButton.styleFrom(
                     minimumSize: const Size(double.infinity, 48),
                   ),
                   child: Text(buttonText),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
+        ),
         ],
       ),
     );
@@ -291,87 +294,95 @@ class DonationListItem extends StatelessWidget {
     final statusColor = _getStatusColor(donation.status);
     final statusBgColor = _getStatusBackgroundColor(donation.status);
 
-    return Card(
-      elevation: 1,
-      color: AppColors.cardLight,
-      margin: const EdgeInsets.only(bottom: 12),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(12.0),
-          child: Row(
-            children: [
-              Container(
-                width: 56,
-                height: 56,
-                decoration: BoxDecoration(
-                  color: AppColors.iconBackgroundLight,
-                  borderRadius: BorderRadius.circular(8),
+    return Semantics(
+      button: onTap != null,
+      label: 'Donation item for ${donation.foodType}, quantity ${donation.quantity}, status ${donation.status}',
+      hint: onTap != null ? 'Double tap to view details' : null,
+      child: Card(
+        elevation: 1,
+        color: AppColors.cardLight,
+        margin: const EdgeInsets.only(bottom: 12),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: onTap != null ? () {
+            PerformanceUtils.triggerHapticFeedback();
+            onTap!();
+          } : null,
+          child: Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: Row(
+              children: [
+                Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    color: AppColors.iconBackgroundLight,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(Icons.fastfood, size: 30, color: AppColors.subtleLight),
                 ),
-                child: const Icon(Icons.fastfood, size: 30, color: AppColors.subtleLight),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        donation.foodType,
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Quantity: ${donation.quantity}',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: AppColors.subtleLight,
+                        ),
+                      ),
+                      Text(
+                        'Pickup: ${donation.pickupAddress}',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: AppColors.subtleLight,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Text(
-                      donation.foodType,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: statusBgColor,
+                        borderRadius: BorderRadius.circular(999),
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                      child: Text(
+                        donation.status,
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: statusColor,
+                        ),
+                      ),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 6),
                     Text(
-                      'Quantity: ${donation.quantity}',
+                      donation.createdAt.split('T').first,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: AppColors.subtleLight,
                       ),
-                    ),
-                    Text(
-                      'Pickup: ${donation.pickupAddress}',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppColors.subtleLight,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),
-              ),
-              const SizedBox(width: 16),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: statusBgColor,
-                      borderRadius: BorderRadius.circular(999),
-                    ),
-                    child: Text(
-                      donation.status,
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: statusColor,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    donation.createdAt.split('T').first,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: AppColors.subtleLight,
-                    ),
-                  ),
-                ],
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -383,6 +394,20 @@ class DonationListItem extends StatelessWidget {
 mixin StatePreservationMixin<T extends StatefulWidget> on State<T> {
   @override
   bool get wantKeepAlive => true;
+}
+
+// --- Performance Utilities ---
+class PerformanceUtils {
+  static const int itemsPerPage = 20;
+  static const Duration debounceDelay = Duration(milliseconds: 300);
+  
+  static void triggerHapticFeedback() {
+    try {
+      HapticFeedback.lightImpact();
+    } catch (e) {
+      debugPrint('Haptic feedback not available: $e');
+    }
+  }
 }
 
 // --- Main App Widget ---
@@ -421,6 +446,7 @@ class FoodLinkApp extends StatelessWidget {
         AppStrings.routeViewDonations: (context) => ViewDonationsScreen(),
         AppStrings.routeCreateRequest: (context) => const CreateRequestScreen(),
         AppStrings.routeTrackRequestStatus: (context) => const TrackRequestStatusScreen(),
+        '/map': (context) => const MapScreen(),
         AppStrings.routeDonorProfile: (context) => const DonorProfileScreen(),
         AppStrings.routeNGOProfile: (context) => const NGOProfileScreen(),
         AppStrings.routeReceiverProfile: (context) => const ReceiverProfileScreen(),
@@ -437,12 +463,17 @@ class FoodLinkSplashScreen extends StatefulWidget {
   State<FoodLinkSplashScreen> createState() => _FoodLinkSplashScreenState();
 }
 
-class _FoodLinkSplashScreenState extends State<FoodLinkSplashScreen> 
+class _FoodLinkSplashScreenState extends State<FoodLinkSplashScreen>
     with StatePreservationMixin {
-  
+
   @override
   void initState() {
     super.initState();
+    // Start offline sync listener once app starts
+    OfflineQueueService.ensureConnectivityListener((op) async {
+      await ApiService.syncOfflineQueue();
+      return true;
+    });
     _initializeApp();
   }
 
@@ -596,9 +627,9 @@ class UserRoleSelectionScreen extends StatelessWidget {
                   color: AppColors.subtleLight,
                   decoration: TextDecoration.underline,
                 ),
-              ),
-            ),
-          ],
+                      ),
+                    ),
+                  ],
         ),
       ),
     );
@@ -723,7 +754,7 @@ class _LoginScreenState extends State<LoginScreen> with StatePreservationMixin {
                     hintText: '••••••••',
                     labelText: 'Password',
                   ),
-                  validator: (value) => 
+                  validator: (value) =>
                       (value == null || value.isEmpty) ? 'Please enter your password' : null,
                 ),
                 const SizedBox(height: 16),
@@ -742,13 +773,13 @@ class _LoginScreenState extends State<LoginScreen> with StatePreservationMixin {
                 ),
                 const SizedBox(height: 24),
                 ElevatedButton(
-                  onPressed: _loading ? null : _login,
+                    onPressed: _loading ? null : _login,
                   style: ElevatedButton.styleFrom(minimumSize: const Size(double.infinity, 50)),
                   child: _loading ? const CircularProgressIndicator() : const Text('Log In'),
                 ),
                 const SizedBox(height: 32),
-                TextButton(
-                  onPressed: () => Navigator.pushNamed(context, AppStrings.routeRoleSelection),
+                    TextButton(
+                      onPressed: () => Navigator.pushNamed(context, AppStrings.routeRoleSelection),
                   child: const Text(
                     'Don\'t have an account? Register',
                     style: TextStyle(
@@ -774,7 +805,7 @@ class DonorRegistrationScreen extends StatefulWidget {
   State<DonorRegistrationScreen> createState() => _DonorRegistrationScreenState();
 }
 
-class _DonorRegistrationScreenState extends State<DonorRegistrationScreen> 
+class _DonorRegistrationScreenState extends State<DonorRegistrationScreen>
     with StatePreservationMixin {
   
   final _formKey = GlobalKey<FormState>();
@@ -853,7 +884,7 @@ class _DonorRegistrationScreenState extends State<DonorRegistrationScreen>
                 controller: _passwordController,
                 obscureText: true,
                 decoration: const InputDecoration(labelText: 'Password'),
-                validator: (value) => 
+                validator: (value) =>
                     (value == null || value.length < 6) ? 'Password must be at least 6 chars' : null,
               ),
               const SizedBox(height: 16),
@@ -863,7 +894,7 @@ class _DonorRegistrationScreenState extends State<DonorRegistrationScreen>
               ),
               const SizedBox(height: 20),
               ElevatedButton(
-                onPressed: _loading ? null : _register,
+                  onPressed: _loading ? null : _register,
                 child: _loading ? const CircularProgressIndicator() : const Text('Register'),
               ),
             ],
@@ -881,7 +912,7 @@ class NGORegistrationScreen extends StatefulWidget {
   State<NGORegistrationScreen> createState() => _NGORegistrationScreenState();
 }
 
-class _NGORegistrationScreenState extends State<NGORegistrationScreen> 
+class _NGORegistrationScreenState extends State<NGORegistrationScreen>
     with StatePreservationMixin {
   
   final _formKey = GlobalKey<FormState>();
@@ -960,7 +991,7 @@ class _NGORegistrationScreenState extends State<NGORegistrationScreen>
                 controller: _passwordController,
                 obscureText: true,
                 decoration: const InputDecoration(labelText: 'Password'),
-                validator: (value) => 
+                validator: (value) =>
                     (value == null || value.length < 6) ? 'Password must be at least 6 chars' : null,
               ),
               const SizedBox(height: 16),
@@ -970,7 +1001,7 @@ class _NGORegistrationScreenState extends State<NGORegistrationScreen>
               ),
               const SizedBox(height: 20),
               ElevatedButton(
-                onPressed: _loading ? null : _register,
+                  onPressed: _loading ? null : _register,
                 child: _loading ? const CircularProgressIndicator() : const Text('Register'),
               ),
             ],
@@ -988,7 +1019,7 @@ class ReceiverRegistrationScreen extends StatefulWidget {
   State<ReceiverRegistrationScreen> createState() => _ReceiverRegistrationScreenState();
 }
 
-class _ReceiverRegistrationScreenState extends State<ReceiverRegistrationScreen> 
+class _ReceiverRegistrationScreenState extends State<ReceiverRegistrationScreen>
     with StatePreservationMixin {
   
   final _formKey = GlobalKey<FormState>();
@@ -1067,7 +1098,7 @@ class _ReceiverRegistrationScreenState extends State<ReceiverRegistrationScreen>
                 controller: _passwordController,
                 obscureText: true,
                 decoration: const InputDecoration(labelText: 'Password'),
-                validator: (value) => 
+                validator: (value) =>
                     (value == null || value.length < 6) ? 'Password must be at least 6 chars' : null,
               ),
               const SizedBox(height: 16),
@@ -1077,7 +1108,7 @@ class _ReceiverRegistrationScreenState extends State<ReceiverRegistrationScreen>
               ),
               const SizedBox(height: 20),
               ElevatedButton(
-                onPressed: _loading ? null : _register,
+                  onPressed: _loading ? null : _register,
                 child: _loading ? const CircularProgressIndicator() : const Text('Register'),
               ),
             ],
@@ -1096,7 +1127,7 @@ class DonorHomeDashboard extends StatefulWidget {
   State<DonorHomeDashboard> createState() => _DonorHomeDashboardState();
 }
 
-class _DonorHomeDashboardState extends State<DonorHomeDashboard> 
+class _DonorHomeDashboardState extends State<DonorHomeDashboard>
     with AutomaticKeepAliveClientMixin {
   
   @override
@@ -1123,26 +1154,26 @@ class _DonorHomeDashboardState extends State<DonorHomeDashboard>
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
               'Welcome, ${user.name}',
               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+                      fontWeight: FontWeight.bold,
             ),
-            const SizedBox(height: 24),
+          ),
+          const SizedBox(height: 24),
             DashboardCard(
               title: 'Create Donation',
               description: 'Donate surplus food to those in need.',
               imageUrl: 'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
               buttonText: 'Start',
               onPressed: () => Navigator.pushNamed(context, AppStrings.routeCreateDonation),
-            ),
-            const SizedBox(height: 16),
+          ),
+          const SizedBox(height: 16),
             DashboardCard(
-              title: 'My Donations',
+                title: 'My Donations',
               description: 'View and manage your donations.',
               imageUrl: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
               buttonText: 'View',
@@ -1150,20 +1181,20 @@ class _DonorHomeDashboardState extends State<DonorHomeDashboard>
             ),
             const SizedBox(height: 16),
             DashboardCard(
-              title: 'Track Status',
+                title: 'Track Status',
               description: 'Follow the journey of your donations.',
               imageUrl: 'https://images.unsplash.com/photo-1581093458799-3b1c04a6d1a4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
               buttonText: 'Track',
               onPressed: () => Navigator.pushNamed(context, AppStrings.routeTrackRequestStatus),
-            ),
-          ],
-        ),
+              ),
+            ],
+          ),
       ),
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: AppColors.backgroundLight,
         selectedItemColor: AppColors.primary,
         unselectedItemColor: AppColors.foregroundLight.withOpacity(0.6),
-        type: BottomNavigationBarType.fixed,
+      type: BottomNavigationBarType.fixed,
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.volunteer_activism), label: 'Donations'),
@@ -1186,7 +1217,7 @@ class ReceiverHomeDashboard extends StatefulWidget {
   State<ReceiverHomeDashboard> createState() => _ReceiverHomeDashboardState();
 }
 
-class _ReceiverHomeDashboardState extends State<ReceiverHomeDashboard> 
+class _ReceiverHomeDashboardState extends State<ReceiverHomeDashboard>
     with AutomaticKeepAliveClientMixin {
   
   @override
@@ -1213,24 +1244,24 @@ class _ReceiverHomeDashboardState extends State<ReceiverHomeDashboard>
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
               'Welcome, ${user.name}',
               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+                            fontWeight: FontWeight.bold,
             ),
-            const SizedBox(height: 24),
+          ),
+          const SizedBox(height: 24),
             DashboardCard(
               title: 'Request Food',
               description: 'Submit a request for food assistance.',
               imageUrl: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
               buttonText: 'Request',
               onPressed: () => Navigator.pushNamed(context, AppStrings.routeCreateRequest),
-            ),
-            const SizedBox(height: 16),
+          ),
+          const SizedBox(height: 16),
             DashboardCard(
               title: 'Available Donations',
               description: 'Browse available food donations.',
@@ -1240,14 +1271,14 @@ class _ReceiverHomeDashboardState extends State<ReceiverHomeDashboard>
             ),
             const SizedBox(height: 16),
             DashboardCard(
-              title: 'My Requests',
+                title: 'My Requests',
               description: 'View and manage your requests.',
               imageUrl: 'https://images.unsplash.com/photo-1581093458799-3b1c04a6d1a4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
               buttonText: 'View',
               onPressed: () => Navigator.pushNamed(context, AppStrings.routeTrackRequestStatus),
-            ),
-          ],
-        ),
+              ),
+            ],
+          ),
       ),
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: AppColors.backgroundLight,
@@ -1276,7 +1307,7 @@ class NGOHomeDashboard extends StatefulWidget {
   State<NGOHomeDashboard> createState() => _NGOHomeDashboardState();
 }
 
-class _NGOHomeDashboardState extends State<NGOHomeDashboard> 
+class _NGOHomeDashboardState extends State<NGOHomeDashboard>
     with AutomaticKeepAliveClientMixin {
   
   @override
@@ -1303,16 +1334,16 @@ class _NGOHomeDashboardState extends State<NGOHomeDashboard>
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
             Text(
               'Welcome, ${user.name}',
               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                 fontWeight: FontWeight.bold,
-              ),
             ),
-            const SizedBox(height: 24),
+          ),
+          const SizedBox(height: 24),
             DashboardCard(
               title: 'Verify Donations',
               description: 'Confirm incoming donations and update inventory.',
@@ -1327,23 +1358,23 @@ class _NGOHomeDashboardState extends State<NGOHomeDashboard>
               imageUrl: 'https://images.unsplash.com/photo-1581093458799-3b1c04a6d1a4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
               buttonText: 'Allocate',
               onPressed: () {},
-            ),
-            const SizedBox(height: 16),
+          ),
+          const SizedBox(height: 16),
             DashboardCard(
               title: 'Transactions',
               description: 'View distribution activities.',
               imageUrl: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
               buttonText: 'View',
               onPressed: () {},
-            ),
-          ],
-        ),
+              ),
+            ],
+          ),
       ),
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: AppColors.backgroundLight,
         selectedItemColor: AppColors.primary,
         unselectedItemColor: AppColors.subtleLight,
-        type: BottomNavigationBarType.fixed,
+      type: BottomNavigationBarType.fixed,
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.volunteer_activism), label: 'Donations'),
@@ -1521,8 +1552,9 @@ class _ViewDonationsScreenState extends State<ViewDonationsScreen>
   
   List<DonationModel> donations = [];
   bool isLoading = true;
+  bool isRefreshing = false;
   String? error;
-
+  
   @override
   bool get wantKeepAlive => true;
 
@@ -1532,22 +1564,42 @@ class _ViewDonationsScreenState extends State<ViewDonationsScreen>
     _loadDonations();
   }
 
-  Future<void> _loadDonations() async {
+  Future<void> _loadDonations({bool showLoading = true}) async {
+    if (showLoading && mounted) setState(() => isLoading = true);
+    
     try {
       final stateUser = context.read<UserState>().user;
       if (stateUser != null) {
         donations = await ApiService.getUserDonations(stateUser.id);
+        error = null;
       } else {
         error = 'User not logged in';
       }
     } catch (e) {
       error = e.toString();
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to load donations: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to load donations: $e'),
+            action: SnackBarAction(
+              label: 'Retry',
+              onPressed: () => _loadDonations(showLoading: false),
+            ),
+          ),
+        );
       }
     } finally {
-      if (mounted) setState(() => isLoading = false);
+      if (mounted) setState(() {
+        isLoading = false;
+        isRefreshing = false;
+      });
     }
+  }
+
+  Future<void> _refreshDonations() async {
+    setState(() => isRefreshing = true);
+    PerformanceUtils.triggerHapticFeedback();
+    await _loadDonations(showLoading: false);
   }
 
   @override
@@ -1559,7 +1611,7 @@ class _ViewDonationsScreenState extends State<ViewDonationsScreen>
     return DefaultTabController(
       length: 2,
       child: Scaffold(
-        appBar: AppBar(
+      appBar: AppBar(
           title: const Text('My Donations'),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_ios_new), 
@@ -1576,22 +1628,85 @@ class _ViewDonationsScreenState extends State<ViewDonationsScreen>
           ),
         ),
         body: error != null
-            ? Center(child: Text(error!))
+            ? Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.error_outline, size: 64, color: AppColors.statusExpired),
+                    const SizedBox(height: 16),
+                    Text(error!, style: const TextStyle(color: AppColors.subtleLight)),
+                    const SizedBox(height: 16),
+                    ElevatedButton.icon(
+                      onPressed: _refreshDonations,
+                      icon: const Icon(Icons.refresh),
+                      label: const Text('Retry'),
+                    ),
+                  ],
+                ),
+              )
             : TabBarView(
                 children: [
+                  // Current Donations Tab
                   isLoading 
                     ? const Center(child: CircularProgressIndicator())
-                    : ListView.builder(
-                        padding: const EdgeInsets.all(16),
-                        itemCount: currentDonations.length,
-                        itemBuilder: (context, index) => DonationListItem(donation: currentDonations[index]),
+                  : RefreshIndicator(
+                      onRefresh: _refreshDonations,
+                      child: AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 250),
+                        child: currentDonations.isEmpty
+                          ? ListView(
+                              key: const ValueKey('empty_current'),
+                              children: const [
+                                SizedBox(height: 100),
+                                Center(
+                                  child: Column(
+                                    children: [
+                                      Icon(Icons.inbox_outlined, size: 64, color: AppColors.subtleLight),
+                                      SizedBox(height: 16),
+                                      Text('No current donations', style: TextStyle(color: AppColors.subtleLight)),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            )
+                          : ListView.builder(
+                              key: const PageStorageKey('current_donations_list'),
+                              padding: const EdgeInsets.all(16),
+                              itemCount: currentDonations.length,
+                              itemBuilder: (context, index) => DonationListItem(donation: currentDonations[index]),
+                            ),
                       ),
+                    ),
+                  // Past Donations Tab
                   isLoading 
                     ? const Center(child: CircularProgressIndicator())
-                    : ListView.builder(
-                        padding: const EdgeInsets.all(16),
-                        itemCount: pastDonations.length,
-                        itemBuilder: (context, index) => DonationListItem(donation: pastDonations[index]),
+                    : RefreshIndicator(
+                        onRefresh: _refreshDonations,
+                        child: AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 250),
+                          child: pastDonations.isEmpty
+                            ? ListView(
+                                key: const ValueKey('empty_past'),
+                                children: const [
+                                  SizedBox(height: 100),
+                                  Center(
+                                    child: Column(
+                                      children: [
+                                        Icon(Icons.history, size: 64, color: AppColors.subtleLight),
+                                        SizedBox(height: 16),
+                                        Text('No past donations', style: TextStyle(color: AppColors.subtleLight)),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              )
+                            : ListView.builder(
+                                key: const PageStorageKey('past_donations_list'),
+                                padding: const EdgeInsets.all(16),
+                                itemCount: pastDonations.length,
+                                itemBuilder: (context, index) => DonationListItem(donation: pastDonations[index]),
+                              ),
+                        ),
                       ),
                 ],
               ),
@@ -1631,7 +1746,7 @@ class _DonorProfileScreenState extends State<DonorProfileScreen>
     }
     try {
       profile = await ApiService.getProfile(user.id);
-    } catch (e) {
+                } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to load profile: $e')));
     } finally {
       if (mounted) setState(() => isLoading = false);
@@ -1663,11 +1778,15 @@ class _DonorProfileScreenState extends State<DonorProfileScreen>
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            CircleAvatar(
-              radius: 64,
-              backgroundImage: const NetworkImage('https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80'),
-              onBackgroundImageError: (exception, stackTrace) => const Icon(Icons.person, size: 64),
+                  children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(64),
+              child: CustomCachedImage(
+                imageUrl: 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+                width: 128,
+                height: 128,
+                fit: BoxFit.cover,
+              ),
             ),
             const SizedBox(height: 16),
             Text(profile!.name, style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold)),
@@ -1721,7 +1840,7 @@ class NGOProfileScreen extends StatefulWidget {
   State<NGOProfileScreen> createState() => _NGOProfileScreenState();
 }
 
-class _NGOProfileScreenState extends State<NGOProfileScreen> 
+class _NGOProfileScreenState extends State<NGOProfileScreen>
     with AutomaticKeepAliveClientMixin {
   
   UserModel? profile;
@@ -1774,18 +1893,22 @@ class _NGOProfileScreenState extends State<NGOProfileScreen>
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
+          child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            CircleAvatar(
-              radius: 64,
-              backgroundImage: const NetworkImage('https://images.unsplash.com/photo-1560472354-b33ff0c44a43?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80'),
-              onBackgroundImageError: (exception, stackTrace) => const Icon(Icons.business, size: 64),
-            ),
-            const SizedBox(height: 16),
+            children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(64),
+                    child: CustomCachedImage(
+                      imageUrl: 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+                      width: 128,
+                      height: 128,
+                      fit: BoxFit.cover,
+                    ),
+                ),
+                const SizedBox(height: 16),
             Text(profile!.name, style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold)),
             Text('NGO • Joined ${profile!.createdAt.split('T').first}', style: Theme.of(context).textTheme.titleMedium?.copyWith(color: AppColors.subtleLight)),
-            const SizedBox(height: 32),
+                const SizedBox(height: 32),
             Card(
               elevation: 1,
               color: AppColors.cardLight,
@@ -1801,21 +1924,21 @@ class _NGOProfileScreenState extends State<NGOProfileScreen>
                 ),
               ),
             ),
-            const SizedBox(height: 32),
+              const SizedBox(height: 32),
             ElevatedButton(
-              onPressed: () async {
-                await context.read<UserState>().logout();
-                if (!mounted) return;
+                  onPressed: () async {
+                    await context.read<UserState>().logout();
+                    if (!mounted) return;
                 Navigator.pushNamedAndRemoveUntil(context, AppStrings.routeRoleSelection, (route) => false);
               },
               style: ElevatedButton.styleFrom(
                 minimumSize: const Size(double.infinity, 50),
                 backgroundColor: Colors.red.withOpacity(0.1),
                 foregroundColor: Colors.red,
+                  ),
+                  child: const Text('Log Out'),
               ),
-              child: const Text('Log Out'),
-            ),
-          ],
+            ],
         ),
       ),
     );
@@ -1829,7 +1952,7 @@ class ReceiverProfileScreen extends StatefulWidget {
   State<ReceiverProfileScreen> createState() => _ReceiverProfileScreenState();
 }
 
-class _ReceiverProfileScreenState extends State<ReceiverProfileScreen> 
+class _ReceiverProfileScreenState extends State<ReceiverProfileScreen>
     with AutomaticKeepAliveClientMixin {
   
   UserModel? profile;
@@ -1882,14 +2005,18 @@ class _ReceiverProfileScreenState extends State<ReceiverProfileScreen>
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
+          child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            CircleAvatar(
-              radius: 64,
-              backgroundImage: const NetworkImage('https://images.unsplash.com/photo-1494790108755-2616b612b786?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80'),
-              onBackgroundImageError: (exception, stackTrace) => const Icon(Icons.person, size: 64),
-            ),
+            children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(64),
+                    child: CustomCachedImage(
+                      imageUrl: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+                      width: 128,
+                      height: 128,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
             const SizedBox(height: 16),
             Text(profile!.name, style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold)),
             Text('Receiver', style: Theme.of(context).textTheme.titleMedium?.copyWith(color: AppColors.primary)),
@@ -1917,7 +2044,7 @@ class _ReceiverProfileScreenState extends State<ReceiverProfileScreen>
                     title: Text('Delivery Preferences', style: Theme.of(context).textTheme.titleMedium),
                     trailing: const Icon(Icons.chevron_right, color: AppColors.subtleLight),
                     onTap: () {},
-                  ),
+                    ),
                 ],
               ),
             ),
@@ -2028,20 +2155,20 @@ class _CreateRequestScreenState extends State<CreateRequestScreen>
                 }).toList(),
                 onChanged: (String? newValue) => setState(() => _foodType = newValue),
                 validator: (value) => value == null ? 'Please select a food type' : null,
-              ),
-              const SizedBox(height: 16),
+                ),
+                const SizedBox(height: 16),
               Text('Quantity', style: Theme.of(context).textTheme.labelLarge),
               const SizedBox(height: 8),
-              TextFormField(
+                  TextFormField(
                 controller: _quantityController,
                 decoration: const InputDecoration(hintText: 'e.g., 5 kg'),
                 validator: (value) => (value == null || value.isEmpty) ? 'Please enter quantity' : null,
               ),
-              const SizedBox(height: 16),
+                  const SizedBox(height: 16),
               Text('Delivery Address', style: Theme.of(context).textTheme.labelLarge),
               const SizedBox(height: 8),
-              TextFormField(
-                controller: _addressController,
+                TextFormField(
+                  controller: _addressController,
                 decoration: const InputDecoration(hintText: 'Enter your full address'),
                 validator: (value) => (value == null || value.isEmpty) ? 'Please enter delivery address' : null,
               ),
@@ -2050,10 +2177,10 @@ class _CreateRequestScreenState extends State<CreateRequestScreen>
               const SizedBox(height: 8),
               TextFormField(
                 controller: _notesController,
-                maxLines: 4,
+                  maxLines: 4,
                 decoration: const InputDecoration(hintText: 'Any special instructions? (optional)'),
-              ),
-              const SizedBox(height: 32),
+                ),
+                const SizedBox(height: 32),
               ElevatedButton(
                 onPressed: _loading ? null : _submitRequest,
                 style: ElevatedButton.styleFrom(minimumSize: const Size(double.infinity, 56), shape: const StadiumBorder()),
@@ -2148,13 +2275,13 @@ class _TrackRequestStatusScreenState extends State<TrackRequestStatusScreen>
         body: error != null
             ? Center(child: Text(error!))
             : TabBarView(
-                children: [
+          children: [
                   _buildRequestList(context, requested),
                   _buildRequestList(context, matched),
                   _buildRequestList(context, fulfilled),
                   _buildRequestList(context, cancelled),
-                ],
-              ),
+          ],
+        ),
       ),
     );
   }
@@ -2164,7 +2291,7 @@ class _TrackRequestStatusScreenState extends State<TrackRequestStatusScreen>
       return const Center(child: Text('No requests found'));
     }
     return ListView.builder(
-      padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
       itemCount: list.length,
       itemBuilder: (context, index) {
         final r = list[index];
@@ -2181,6 +2308,25 @@ class _TrackRequestStatusScreenState extends State<TrackRequestStatusScreen>
           ),
         );
       },
+    );
+  }
+}
+
+class MapScreen extends StatelessWidget {
+  const MapScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Pickup & Delivery Map')),
+      body: const GoogleMap(
+        initialCameraPosition: CameraPosition(
+          target: LatLng(37.7749, -122.4194),
+          zoom: 12,
+        ),
+        myLocationButtonEnabled: true,
+        myLocationEnabled: true,
+      ),
     );
   }
 }

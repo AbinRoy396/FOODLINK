@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'offline_queue.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '/models/user_model.dart';
 import '/models/donation_model.dart';
@@ -144,6 +145,30 @@ class ApiService {
       final token = await _getToken();
       if (token == null) throw Exception('No token');
 
+      if (!await OfflineQueueService.isOnline()) {
+        await OfflineQueueService.enqueue(OfflineOperation(
+          type: OfflineOpType.createDonation,
+          payload: {
+            'foodType': foodType,
+            'quantity': quantity,
+            'pickupAddress': pickupAddress,
+            'expiryTime': expiryTime,
+          },
+          timestampMs: DateTime.now().millisecondsSinceEpoch,
+        ));
+        // Return a local optimistic object
+        return DonationModel(
+          id: -DateTime.now().millisecondsSinceEpoch,
+          donorId: -1,
+          foodType: foodType,
+          quantity: quantity,
+          pickupAddress: pickupAddress,
+          status: 'Pending',
+          expiryTime: expiryTime,
+          createdAt: DateTime.now().toIso8601String(),
+        );
+      }
+
       final response = await http.post(
         Uri.parse('$baseUrl/donations'),
         headers: {
@@ -235,6 +260,28 @@ class ApiService {
       final token = await _getToken();
       if (token == null) throw Exception('No token');
 
+      if (!await OfflineQueueService.isOnline()) {
+        await OfflineQueueService.enqueue(OfflineOperation(
+          type: OfflineOpType.createRequest,
+          payload: {
+            'foodType': foodType,
+            'quantity': quantity,
+            'address': address,
+            'notes': notes,
+          },
+          timestampMs: DateTime.now().millisecondsSinceEpoch,
+        ));
+        return RequestModel(
+          id: -DateTime.now().millisecondsSinceEpoch,
+          receiverId: -1,
+          foodType: foodType,
+          quantity: quantity,
+          address: address,
+          status: 'Requested',
+          createdAt: DateTime.now().toIso8601String(),
+        );
+      }
+
       final response = await http.post(
         Uri.parse('$baseUrl/requests'),
         headers: {
@@ -313,5 +360,33 @@ class ApiService {
       debugPrint('Update request status error: $e');
       rethrow;
     }
+  }
+
+  // Sync offline queue
+  static Future<void> syncOfflineQueue() async {
+    await OfflineQueueService.drainQueue((op) async {
+      try {
+        switch (op.type) {
+          case OfflineOpType.createDonation:
+            await createDonation(
+              foodType: op.payload['foodType'],
+              quantity: op.payload['quantity'],
+              pickupAddress: op.payload['pickupAddress'],
+              expiryTime: op.payload['expiryTime'],
+            );
+            return true;
+          case OfflineOpType.createRequest:
+            await createRequest(
+              foodType: op.payload['foodType'],
+              quantity: op.payload['quantity'],
+              address: op.payload['address'],
+              notes: op.payload['notes'],
+            );
+            return true;
+        }
+      } catch (_) {
+        return false;
+      }
+    });
   }
 }
