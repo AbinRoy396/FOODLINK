@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>FoodLink - Role Selection</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;700;900&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#11d452",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#102216",
+                    },
+                    fontFamily: {
+                        "display": ["Work Sans"]
+                    },
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-black dark:text-white">
+<div class="flex flex-col h-screen justify-between">
+<header class="p-4">
+<div class="flex justify-center items-center relative">
+<h1 class="text-xl font-bold">FoodLink</h1>
+<button class="absolute right-0">
+<span class="material-symbols-outlined">help</span>
+</button>
+</div>
+</header>
+<main class="flex-grow flex flex-col items-center justify-center px-4 text-center">
+<div class="max-w-md w-full">
+<h2 class="text-3xl font-bold mb-2">Select Your Role</h2>
+<p class="text-black/70 dark:text-white/70 mb-8">Choose your role to get started with FoodLink</p>
+<div class="space-y-4">
+<button class="w-full bg-primary text-background-dark font-bold py-4 rounded-xl text-lg hover:opacity-90 transition-opacity">
+                        Donor
+                    </button>
+<button class="w-full bg-primary/20 dark:bg-primary/30 text-black dark:text-white font-bold py-4 rounded-xl text-lg hover:bg-primary/30 dark:hover:bg-primary/40 transition-colors">
+                        NGO
+                    </button>
+<button class="w-full bg-primary/20 dark:bg-primary/30 text-black dark:text-white font-bold py-4 rounded-xl text-lg hover:bg-primary/30 dark:hover:bg-primary/40 transition-colors">
+                        Receiver
+                    </button>
+</div>
+</div>
+</main>
+<footer class="border-t border-black/10 dark:border-white/10 bg-background-light dark:bg-background-dark">
+<nav class="flex justify-around p-2">
+<a class="flex flex-col items-center text-primary" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">home</span>
+<span class="text-xs">Home</span>
+</a>
+<a class="flex flex-col items-center text-black/60 dark:text-white/60 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">search</span>
+<span class="text-xs">Search</span>
+</a>
+<a class="flex flex-col items-center text-black/60 dark:text-white/60 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">add_box</span>
+<span class="text-xs">Post</span>
+</a>
+<a class="flex flex-col items-center text-black/60 dark:text-white/60 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">chat_bubble</span>
+<span class="text-xs">Messages</span>
+</a>
+<a class="flex flex-col items-center text-black/60 dark:text-white/60 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="text-xs">Profile</span>
+</a>
+</nav>
+</footer>
+</div>
+
+</body></html>

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Stitch Design</title>
+<link crossorigin="" href="https://fonts.gstatic.com/" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              primary: '#11d452',
+              'background-light': '#f6f8f6',
+              'background-dark': '#102216',
+            },
+            fontFamily: {
+              display: ['Work Sans'],
+            },
+            borderRadius: { DEFAULT: '0.25rem', lg: '0.5rem', xl: '0.75rem', full: '9999px' },
+          },
+        },
+      };
+    </script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-gray-800 dark:text-gray-200">
+<div class="flex h-screen flex-col">
+<header class="flex-shrink-0 bg-background-light dark:bg-background-dark shadow-sm">
+<div class="container mx-auto px-4">
+<div class="flex h-16 items-center justify-between">
+<button class="p-2">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h1 class="text-lg font-bold">Donation Verification</h1>
+<div class="w-8"></div>
+</div>
+</div>
+</header>
+<main class="flex-1 overflow-y-auto p-4">
+<section class="space-y-6">
+<div>
+<h2 class="text-xl font-bold">Donation Details</h2>
+<div class="mt-4 space-y-4 rounded-lg bg-background-light/80 dark:bg-background-dark/80 p-4 shadow-sm">
+<div class="flex items-center gap-4">
+<img alt="Donor" class="h-12 w-12 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCWW94wklr7VjGTwUYRzL7wdFVbTpOkZ-BLETXW4kfpC4Ua2RBFbsjHpiazFobh1ulnBih4OiqiLxSyt9TNW14x3FJ4CuCnB3_tKWxS9zqlr7TYPgQR-MUp_8-BUZ8-4aW9qQGxajkTBlDg5AWdIAuxSMqB7CmyNRHkZxR1JKHbbGcDBZy-0knlPgiOob2d1ebY_YJQgIgpZj9L6ycqqn4OVpIWw1gGw-4FhLtLySY8Rzk5yUM4ZkK3VeyTGm8h8uhMJX931Y8Gug"/>
+<div>
+<p class="font-semibold">Donor: Sarah Johnson</p>
+<p class="text-sm text-gray-600 dark:text-gray-400">123 Main Street, Anytown</p>
+</div>
+</div>
+<div class="border-t border-gray-200 dark:border-gray-700"></div>
+<div class="flex items-center gap-4">
+<div class="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/20 text-primary">
+<span class="material-symbols-outlined">inventory_2</span>
+</div>
+<div>
+<p class="font-semibold">Items: Non-perishable</p>
+<p class="text-sm text-gray-600 dark:text-gray-400">10 boxes of canned goods</p>
+</div>
+</div>
+<div class="border-t border-gray-200 dark:border-gray-700"></div>
+<div class="flex items-center gap-4">
+<div class="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/20 text-primary">
+<span class="material-symbols-outlined">local_shipping</span>
+</div>
+<div>
+<p class="font-semibold">Delivery: Completed</p>
+<p class="text-sm text-gray-600 dark:text-gray-400">Delivered on 2024-07-26</p>
+</div>
+</div>
+</div>
+</div>
+<div>
+<h2 class="text-xl font-bold">Verification</h2>
+<div class="mt-4 grid grid-cols-2 gap-4">
+<button class="flex w-full items-center justify-center rounded-lg bg-primary py-3 text-sm font-bold text-background-dark transition-opacity hover:opacity-90">Approve</button>
+<button class="flex w-full items-center justify-center rounded-lg bg-gray-200 dark:bg-gray-700 py-3 text-sm font-bold text-gray-800 dark:text-gray-200 transition-colors hover:bg-gray-300 dark:hover:bg-gray-600">Reject</button>
+</div>
+</div>
+</section>
+</main>
+<footer class="flex-shrink-0 border-t border-gray-200 dark:border-gray-800 bg-background-light dark:bg-background-dark">
+<nav class="flex items-center justify-around py-2">
+<a class="flex flex-col items-center gap-1 p-2 text-gray-500 dark:text-gray-400" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="text-xs font-medium">Home</span>
+</a>
+<a class="flex flex-col items-center gap-1 rounded-full p-2 text-primary" href="#">
+<span class="material-symbols-outlined">volunteer_activism</span>
+<span class="text-xs font-medium">Donations</span>
+</a>
+<a class="flex flex-col items-center gap-1 p-2 text-gray-500 dark:text-gray-400" href="#">
+<span class="material-symbols-outlined">inbox</span>
+<span class="text-xs font-medium">Requests</span>
+</a>
+<a class="flex flex-col items-center gap-1 p-2 text-gray-500 dark:text-gray-400" href="#">
+<span class="material-symbols-outlined">receipt_long</span>
+<span class="text-xs font-medium">Transactions</span>
+</a>
+<a class="flex flex-col items-center gap-1 p-2 text-gray-500 dark:text-gray-400" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="text-xs font-medium">Profile</span>
+</a>
+</nav>
+</footer>
+</div>
+
+</body></html>

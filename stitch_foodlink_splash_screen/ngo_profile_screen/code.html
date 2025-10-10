@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>FoodLink NGO Profile</title>
+<link crossorigin="" href="https://fonts.gstatic.com/" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;700;900&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#11d452",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#102216",
+                    },
+                    fontFamily: {
+                        "display": ["Work Sans"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings:
+            'FILL' 1,
+            'wght' 400,
+            'GRAD' 0,
+            'opsz' 24
+        }
+    </style>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display">
+<div class="relative flex h-auto min-h-screen w-full flex-col justify-between group/design-root overflow-x-hidden">
+<div>
+<header class="flex items-center p-4 pb-2 justify-between sticky top-0 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-sm z-10">
+<button class="text-slate-800 dark:text-slate-200">
+<span class="material-symbols-outlined">
+                        arrow_back
+                    </span>
+</button>
+<h1 class="text-slate-900 dark:text-slate-50 text-lg font-bold flex-1 text-center pr-12">Profile</h1>
+</header>
+<main class="p-4 space-y-6">
+<div class="flex flex-col items-center gap-4">
+<div class="relative">
+<img alt="Green Harvest Initiative Logo" class="w-32 h-32 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAxYTnRbpxnMlWPmovNDs45KOL4Em3Qrkv7YMiF21jDkrnlAoCzVxNIDbdHGRouvQgwgUc__NRrRN1pGMR2Ctfp8cAhbNZAf6p_jz1ZjlisE_r4hFUMm43rSqlHS0052pxgDSSefYe5oFUoqVpP5198Ie_uefK3wus5F5J__Y6fIS_yjmKfRbLTaLaSugsqXhlAYrxAjGzMzdfrBjnQOjzTq6uN7KG8FfOnOff3gSq65AFpaf1Bnslkauv5e4E8HKsi1T0QpFqlhg"/>
+<button class="absolute bottom-1 right-1 bg-primary text-white rounded-full p-1.5 shadow-md">
+<span class="material-symbols-outlined text-base">edit</span>
+</button>
+</div>
+<div class="text-center">
+<h2 class="text-2xl font-bold text-slate-900 dark:text-slate-50">Green Harvest Initiative</h2>
+<p class="text-base text-slate-600 dark:text-slate-400">NGO • Joined 2022</p>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="bg-white dark:bg-slate-800/50 p-4 rounded-lg text-center shadow-sm">
+<p class="text-3xl font-bold text-slate-900 dark:text-slate-50">125</p>
+<p class="text-sm text-slate-600 dark:text-slate-400">Donations Verified</p>
+</div>
+<div class="bg-white dark:bg-slate-800/50 p-4 rounded-lg text-center shadow-sm">
+<p class="text-3xl font-bold text-slate-900 dark:text-slate-50">85</p>
+<p class="text-sm text-slate-600 dark:text-slate-400">Requests Allocated</p>
+</div>
+</div>
+<div>
+<h3 class="text-lg font-bold text-slate-900 dark:text-slate-50 px-4 pb-2 pt-4">Settings</h3>
+<div class="bg-white dark:bg-slate-800/50 rounded-lg shadow-sm">
+<div class="flex items-center justify-between p-4">
+<p class="text-slate-800 dark:text-slate-200">Notifications</p>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox" value=""/>
+<div class="w-11 h-6 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-600 peer-checked:bg-primary"></div>
+</label>
+</div>
+</div>
+</div>
+</main>
+</div>
+<footer class="sticky bottom-0 bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-sm border-t border-slate-200 dark:border-slate-800">
+<nav class="flex justify-around items-center px-4 pt-2 pb-3">
+<a class="flex flex-col items-center gap-1 text-slate-500 dark:text-slate-400" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="text-xs">Home</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-500 dark:text-slate-400" href="#">
+<span class="material-symbols-outlined">volunteer_activism</span>
+<span class="text-xs">Donations</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-500 dark:text-slate-400" href="#">
+<span class="material-symbols-outlined">inbox</span>
+<span class="text-xs">Requests</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-500 dark:text-slate-400" href="#">
+<span class="material-symbols-outlined">receipt_long</span>
+<span class="text-xs">Transactions</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-primary" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="text-xs font-bold">Profile</span>
+</a>
+</nav>
+</footer>
+</div>
+
+</body></html>

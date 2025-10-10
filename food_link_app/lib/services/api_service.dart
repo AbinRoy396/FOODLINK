@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:async';
 import 'package:http/http.dart' as http;
 import 'offline_queue.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -10,6 +11,11 @@ import 'package:flutter/material.dart';
 class ApiService {
   static const String baseUrl = "http://10.0.2.2:3000/api";
   static const String _tokenKey = 'auth_token';
+  static const int maxRetries = 3;
+  static const Duration requestTimeout = Duration(seconds: 30);
+  
+  // Callback for session expiry
+  static Function()? onSessionExpired;
 
   // Get stored token
   static Future<String?> _getToken() async {
@@ -42,6 +48,80 @@ class ApiService {
     }
   }
 
+  // Retry logic for API calls
+  static Future<T> _retryRequest<T>(Future<T> Function() request) async {
+    int attempts = 0;
+    
+    while (attempts < maxRetries) {
+      try {
+        return await request();
+      } catch (e) {
+        attempts++;
+        if (attempts >= maxRetries) {
+          rethrow;
+        }
+        // Exponential backoff
+        await Future.delayed(Duration(seconds: attempts));
+        debugPrint('Retry attempt $attempts/$maxRetries');
+      }
+    }
+    throw Exception('Max retries exceeded');
+  }
+
+  // Handle HTTP response with session check
+  static void _handleResponse(http.Response response) {
+    if (response.statusCode == 401) {
+      // Session expired
+      clearToken();
+      if (onSessionExpired != null) {
+        onSessionExpired!();
+      }
+      throw Exception('Session expired. Please login again.');
+    }
+    
+    if (response.statusCode >= 500) {
+      throw Exception('Server error. Please try again later.');
+    }
+  }
+
+  // Make HTTP request with timeout and retry
+  static Future<http.Response> _makeRequest({
+    required String method,
+    required String endpoint,
+    Map<String, String>? headers,
+    String? body,
+  }) async {
+    return await _retryRequest(() async {
+      final uri = Uri.parse('$baseUrl$endpoint');
+      
+      http.Response response;
+      
+      switch (method.toUpperCase()) {
+        case 'GET':
+          response = await http.get(uri, headers: headers)
+              .timeout(requestTimeout);
+          break;
+        case 'POST':
+          response = await http.post(uri, headers: headers, body: body)
+              .timeout(requestTimeout);
+          break;
+        case 'PUT':
+          response = await http.put(uri, headers: headers, body: body)
+              .timeout(requestTimeout);
+          break;
+        case 'DELETE':
+          response = await http.delete(uri, headers: headers)
+              .timeout(requestTimeout);
+          break;
+        default:
+          throw Exception('Unsupported HTTP method: $method');
+      }
+      
+      _handleResponse(response);
+      return response;
+    });
+  }
+
   // Register User
   static Future<Map<String, dynamic>?> register({
     required String email,
@@ -49,18 +129,29 @@ class ApiService {
     required String name,
     required String role,
     String? address,
+    String? phone,
+    String? description,
+    int? familySize,
   }) async {
     try {
-      final response = await http.post(
-        Uri.parse('$baseUrl/register'),
+      final requestBody = {
+        'email': email,
+        'password': password,
+        'name': name,
+        'role': role,
+        'address': address,
+        'phone': phone,
+      };
+
+      // Add optional fields if provided
+      if (description != null) requestBody['description'] = description;
+      if (familySize != null) requestBody['familySize'] = familySize.toString();
+
+      final response = await _makeRequest(
+        method: 'POST',
+        endpoint: '/register',
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'email': email,
-          'password': password,
-          'name': name,
-          'role': role,
-          'address': address,
-        }),
+        body: jsonEncode(requestBody),
       );
 
       if (response.statusCode == 201) {
@@ -71,6 +162,8 @@ class ApiService {
         final error = jsonDecode(response.body)['error'] ?? 'Registration failed';
         throw Exception(error);
       }
+    } on TimeoutException {
+      throw Exception('Request timed out. Please check your connection.');
     } catch (e) {
       debugPrint('Registration error: $e');
       rethrow;
@@ -362,6 +455,33 @@ class ApiService {
     }
   }
 
+  // Get All Donations (for map view)
+  static Future<List<DonationModel>> getAllDonations() async {
+    try {
+      final token = await _getToken();
+      if (token == null) throw Exception('No token');
+
+      final response = await http.get(
+        Uri.parse('$baseUrl/donations'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+        return data.map((json) => DonationModel.fromJson(json)).toList();
+      } else {
+        final error = jsonDecode(response.body)['error'] ?? 'Failed to get donations';
+        throw Exception(error);
+      }
+    } catch (e) {
+      debugPrint('Get all donations error: $e');
+      rethrow;
+    }
+  }
+
   // Sync offline queue
   static Future<void> syncOfflineQueue() async {
     await OfflineQueueService.drainQueue((op) async {
@@ -388,5 +508,63 @@ class ApiService {
         return false;
       }
     });
+  }
+
+  // Register Donor
+  static Future<Map<String, dynamic>?> registerDonor({
+    required String name,
+    required String email,
+    required String password,
+    required String phone,
+    required String address,
+  }) async {
+    return await register(
+      email: email,
+      password: password,
+      name: name,
+      role: 'Donor',
+      address: address,
+      phone: phone,
+    );
+  }
+
+  // Register NGO
+  static Future<Map<String, dynamic>?> registerNGO({
+    required String name,
+    required String email,
+    required String password,
+    required String phone,
+    required String address,
+    required String description,
+  }) async {
+    return await register(
+      email: email,
+      password: password,
+      name: name,
+      role: 'NGO',
+      address: address,
+      phone: phone,
+      description: description,
+    );
+  }
+
+  // Register Receiver
+  static Future<Map<String, dynamic>?> registerReceiver({
+    required String name,
+    required String email,
+    required String password,
+    required String phone,
+    required String address,
+    required int familySize,
+  }) async {
+    return await register(
+      email: email,
+      password: password,
+      name: name,
+      role: 'Receiver',
+      address: address,
+      phone: phone,
+      familySize: familySize,
+    );
   }
 }

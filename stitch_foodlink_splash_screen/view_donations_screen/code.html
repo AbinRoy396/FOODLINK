@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<title>FoodLink - My Donations</title>
+<link crossorigin="" href="https://fonts.gstatic.com/" rel="preconnect"/>
+<link as="style" href="https://fonts.googleapis.com/css2?display=swap&amp;family=Work+Sans:wght@400;500;700;900" onload="this.rel='stylesheet'" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#11d452",
+            "background-light": "#f6f8f6",
+            "background-dark": "#102216",
+          },
+          fontFamily: {
+            "display": ["Work Sans"]
+          },
+          borderRadius: {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+        },
+      },
+    }
+  </script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display">
+<div class="relative flex h-auto min-h-screen w-full flex-col justify-between group/design-root overflow-x-hidden">
+<div class="flex-grow">
+<header class="bg-background-light dark:bg-background-dark sticky top-0 z-10">
+<div class="flex items-center p-4">
+<button class="text-gray-800 dark:text-white">
+<span class="material-symbols-outlined">arrow_back_ios_new</span>
+</button>
+<h1 class="text-gray-900 dark:text-white text-xl font-bold flex-1 text-center pr-6">My Donations</h1>
+</div>
+<div class="border-b border-gray-200 dark:border-gray-700">
+<nav class="flex px-4 gap-8">
+<a class="flex flex-col items-center justify-center border-b-2 border-primary text-gray-900 dark:text-white pb-3 pt-4" href="#">
+<p class="text-sm font-bold">Current</p>
+</a>
+<a class="flex flex-col items-center justify-center border-b-2 border-transparent text-gray-500 dark:text-gray-400 pb-3 pt-4" href="#">
+<p class="text-sm font-bold">Past</p>
+</a>
+</nav>
+</div>
+</header>
+<main class="p-4 space-y-3">
+<div class="flex items-center gap-4 bg-white dark:bg-gray-800/20 p-3 rounded-xl">
+<div class="flex items-center gap-4 flex-grow">
+<img alt="Fresh Produce" class="bg-center bg-no-repeat aspect-square bg-cover rounded-lg size-14" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDL3JTk9pRcudLL9AJJz-1nPAijXFKKMf8kjaVJH8S5Nnxi0emeXc8l3HXrvfTGDs3wV-qCWlccUzNERQBKXrgwbhgeuzzHPWxtam5WpbfFU8ERK8G_drHRfJzpohhLMwgglu6EjmBqO5qAtdZkfktfMZ6bPCpEzdhktg5shZpjkjuB-_7r2ySK18jpSQNK3l7IsPMb8jm2M1AxaOcqqfPfjfqRRGtpVJ9DqpIn9hmhnGD0MECJQWTQdY1D9Ae2pu1HHsxMsKx1WQ"/>
+<div class="flex flex-col justify-center">
+<p class="text-gray-900 dark:text-white text-base font-bold line-clamp-1">Fresh Produce</p>
+<p class="text-gray-500 dark:text-gray-400 text-sm font-medium line-clamp-2">Donated: 10kg</p>
+</div>
+</div>
+<div class="shrink-0">
+<span class="px-3 py-1 text-sm font-semibold text-white bg-primary/80 rounded-full">Donated</span>
+</div>
+</div>
+<div class="flex items-center gap-4 bg-white dark:bg-gray-800/20 p-3 rounded-xl">
+<div class="flex items-center gap-4 flex-grow">
+<img alt="Canned Goods" class="bg-center bg-no-repeat aspect-square bg-cover rounded-lg size-14" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB42RE3GKKxBftttVvfDBtVRC_AxVHecZcf5hcdFCkLGy3VhR9CeiBlZkw3NMhgASh98w-wetZab5Mqb8cjHXw_tuSYkIMVPYbgJ1ZdqGZRnsJXXelj7rRB6mrv5Qs5bvWVgboVRU2pwi0TFB_Hs-z3TuIiobBV3_8omkTrR3Pm4qcI8EVGk5DlqFR6K_S1lcEikq8J7_AMXZftuM_r5DpQJ5DDiMqXCDmOmpFSbFXDF6NHC483ASsInmciyWv7urBV2d3YDocfsg"/>
+<div class="flex flex-col justify-center">
+<p class="text-gray-900 dark:text-white text-base font-bold line-clamp-1">Canned Goods</p>
+<p class="text-gray-500 dark:text-gray-400 text-sm font-medium line-clamp-2">Donated: 5kg</p>
+</div>
+</div>
+<div class="shrink-0">
+<span class="px-3 py-1 text-sm font-semibold text-blue-800 dark:text-blue-200 bg-blue-100 dark:bg-blue-900/40 rounded-full">Allocated</span>
+</div>
+</div>
+<div class="flex items-center gap-4 bg-white dark:bg-gray-800/20 p-3 rounded-xl">
+<div class="flex items-center gap-4 flex-grow">
+<img alt="Bakery Items" class="bg-center bg-no-repeat aspect-square bg-cover rounded-lg size-14" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDhM5YNeDe8fUYKb_necBpPqazo6taHAv3BQdL1Q-joKnD09TQDnwXK75Uvm--SagHbDcIHuuogspUzuHKKDfYmNIHT-K7TfzTMSJg8rl3FTUY-kfEpJpzNM_mDZoCLEhVN8PVRMnBeLNwkGtcHr63LN0LvMUawcIbHr3r27tgPY4sBlKaY_TQuhx84fm0efOIvhjsSpkuW_f-TFVynm2Uq5Kr8ojJXpx3XuA79DbLMWe_4SPMyF0RazX_-XsDEFY_9lyns_jplKw"/>
+<div class="flex flex-col justify-center">
+<p class="text-gray-900 dark:text-white text-base font-bold line-clamp-1">Bakery Items</p>
+<p class="text-gray-500 dark:text-gray-400 text-sm font-medium line-clamp-2">Donated: 8kg</p>
+</div>
+</div>
+<div class="shrink-0">
+<span class="px-3 py-1 text-sm font-semibold text-purple-800 dark:text-purple-200 bg-purple-100 dark:bg-purple-900/40 rounded-full">Picked Up</span>
+</div>
+</div>
+<div class="flex items-center gap-4 bg-white dark:bg-gray-800/20 p-3 rounded-xl">
+<div class="flex items-center gap-4 flex-grow">
+<img alt="Dairy Products" class="bg-center bg-no-repeat aspect-square bg-cover rounded-lg size-14" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBOj4EeAsvAIdNWabEqJiaLOdHPm55AJgTVC4swEcoewk3LEA_LnQVSZRnw_iXWIFfAFLmpQi4o4fTN8uANA0P-0wwmjEXqHdpD4ot4IeU3zUavLUR4GBIAChqt5ai54YFa3UIJY2B8vSxtSajxZ7CxQkN8eUhD3uIpvVoVOxKacGB5nG1j89cff4Pd30JSApgPvTtlWmunG1xCM1e9FwTodSySw6D_8EFFv5KUcbSRRgmdXLKU2JZG9NOFOLn8sTWspog0l1fZ0g"/>
+<div class="flex flex-col justify-center">
+<p class="text-gray-900 dark:text-white text-base font-bold line-clamp-1">Dairy Products</p>
+<p class="text-gray-500 dark:text-gray-400 text-sm font-medium line-clamp-2">Donated: 12kg</p>
+</div>
+</div>
+<div class="shrink-0">
+<span class="px-3 py-1 text-sm font-semibold text-green-800 dark:text-green-200 bg-green-100 dark:bg-green-900/40 rounded-full">Delivered</span>
+</div>
+</div>
+<div class="flex items-center gap-4 bg-white dark:bg-gray-800/20 p-3 rounded-xl opacity-60">
+<div class="flex items-center gap-4 flex-grow">
+<img alt="Fruits" class="bg-center bg-no-repeat aspect-square bg-cover rounded-lg size-14" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBgmtu9jlrR2J3nXdfIb_z7OoORMtud3zS7hicJQskoiOutKNoKa4dXifG0XYPx4vEQk25MJXkEprShdn1vA4c3-SyRAuxF2Q9eICKgSBVluAXf0PRmX-aYUEVzszoPghlKAliZvGqDok8-WT0y1mEsU6dMSvWT-KfxWVMKNeVBZB63-kwwhjgucrdesklM8lCS6p9PFXLCq5Kggu5uskk-6YCIK0C7sK3zRZUYc5lfZ23r8k1vPGIZTB2quxyBXFDmen8c6qsTmQ"/>
+<div class="flex flex-col justify-center">
+<p class="text-gray-900 dark:text-white text-base font-bold line-clamp-1">Fruits</p>
+<p class="text-gray-500 dark:text-gray-400 text-sm font-medium line-clamp-2">Donated: 3kg</p>
+</div>
+</div>
+<div class="shrink-0">
+<span class="px-3 py-1 text-sm font-semibold text-red-800 dark:text-red-200 bg-red-100 dark:bg-red-900/40 rounded-full">Expired</span>
+</div>
+</div>
+</main>
+</div>
+<footer class="sticky bottom-0 bg-background-light dark:bg-background-dark border-t border-gray-200 dark:border-gray-700/50">
+<div class="flex justify-around items-center pt-2 pb-3">
+<a class="flex flex-col items-center justify-end gap-1 text-gray-500 dark:text-gray-400" href="#">
+<span class="material-symbols-outlined">home</span>
+<p class="text-xs font-medium">Home</p>
+</a>
+<a class="flex flex-col items-center justify-end gap-1 text-primary" href="#">
+<div class="bg-primary/20 rounded-full p-2">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">volunteer_activism</span>
+</div>
+<p class="text-xs font-bold">My Donations</p>
+</a>
+<a class="flex flex-col items-center justify-end gap-1 text-gray-500 dark:text-gray-400" href="#">
+<span class="material-symbols-outlined">local_shipping</span>
+<p class="text-xs font-medium">Track Status</p>
+</a>
+<a class="flex flex-col items-center justify-end gap-1 text-gray-500 dark:text-gray-400" href="#">
+<span class="material-symbols-outlined">person</span>
+<p class="text-xs font-medium">Profile</p>
+</a>
+</div>
+</footer>
+</div>
+
+</body></html>

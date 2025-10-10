@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>FoodLink Feedback</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;700;900&amp;display=swap" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#11d452",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#102216",
+                        "text-light": "#111813",
+                        "text-dark": "#f6f8f6",
+                        "text-subtle-light": "#61896f",
+                        "text-subtle-dark": "#a3b3a9",
+                        "border-light": "#f0f4f2",
+                        "border-dark": "#203426",
+                        "component-light": "#ffffff",
+                        "component-dark": "#1a2c20"
+                    },
+                    fontFamily: {
+                        "display": ["Work Sans"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "0.75rem",
+                        "xl": "1rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .icon-star-filled { color: #11d452; }
+        .icon-star-empty { color: #d1d5db; }
+        .dark .icon-star-empty { color: #4b5563; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display">
+<div class="flex flex-col h-screen justify-between">
+<main class="overflow-y-auto">
+<header class="sticky top-0 bg-background-light dark:bg-background-dark z-10">
+<div class="flex items-center p-4">
+<button class="text-text-light dark:text-text-dark">
+<svg fill="currentColor" height="24" viewBox="0 0 256 256" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="M224,128a8,8,0,0,1-8,8H59.31l58.35,58.34a8,8,0,0,1-11.32,11.32l-72-72a8,8,0,0,1,0-11.32l72-72a8,8,0,0,1,11.32,11.32L59.31,120H216A8,8,0,0,1,224,128Z"></path>
+</svg>
+</button>
+<h1 class="text-lg font-bold text-text-light dark:text-text-dark text-center flex-1 pr-6">Feedback</h1>
+</div>
+</header>
+<div class="p-4 space-y-8">
+<div class="bg-component-light dark:bg-component-dark p-6 rounded-xl shadow-sm flex flex-col sm:flex-row items-start sm:items-center gap-6">
+<div class="flex flex-col items-center">
+<p class="text-5xl font-black text-primary">4.5</p>
+<div class="flex">
+<svg class="icon-star-filled" fill="currentColor" height="20px" viewBox="0 0 256 256" width="20px"><path d="M234.5,114.38l-45.1,39.36,13.51,58.6a16,16,0,0,1-23.84,17.34l-51.11-31-51,31a16,16,0,0,1-23.84-17.34L66.61,153.8,21.5,114.38a16,16,0,0,1,9.11-28.06l59.46-5.15,23.21-55.36a15.95,15.95,0,0,1,29.44,0h0L166,81.17l59.44,5.15a16,16,0,0,1,9.11,28.06Z"></path></svg>
+<svg class="icon-star-filled" fill="currentColor" height="20px" viewBox="0 0 256 256" width="20px"><path d="M234.5,114.38l-45.1,39.36,13.51,58.6a16,16,0,0,1-23.84,17.34l-51.11-31-51,31a16,16,0,0,1-23.84-17.34L66.61,153.8,21.5,114.38a16,16,0,0,1,9.11-28.06l59.46-5.15,23.21-55.36a15.95,15.95,0,0,1,29.44,0h0L166,81.17l59.44,5.15a16,16,0,0,1,9.11,28.06Z"></path></svg>
+<svg class="icon-star-filled" fill="currentColor" height="20px" viewBox="0 0 256 256" width="20px"><path d="M234.5,114.38l-45.1,39.36,13.51,58.6a16,16,0,0,1-23.84,17.34l-51.11-31-51,31a16,16,0,0,1-23.84-17.34L66.61,153.8,21.5,114.38a16,16,0,0,1,9.11-28.06l59.46-5.15,23.21-55.36a15.95,15.95,0,0,1,29.44,0h0L166,81.17l59.44,5.15a16,16,0,0,1,9.11,28.06Z"></path></svg>
+<svg class="icon-star-filled" fill="currentColor" height="20px" viewBox="0 0 256 256" width="20px"><path d="M234.5,114.38l-45.1,39.36,13.51,58.6a16,16,0,0,1-23.84,17.34l-51.11-31-51,31a16,16,0,0,1-23.84-17.34L66.61,153.8,21.5,114.38a16,16,0,0,1,9.11-28.06l59.46-5.15,23.21-55.36a15.95,15.95,0,0,1,29.44,0h0L166,81.17l59.44,5.15a16,16,0,0,1,9.11,28.06Z"></path></svg>
+<svg class="icon-star-empty" fill="currentColor" height="20px" viewBox="0 0 256 256" width="20px"><path d="M239.2,97.29a16,16,0,0,0-13.81-11L166,81.17,142.72,25.81h0a15.95,15.95,0,0,0-29.44,0L90.07,81.17,30.61,86.32a16,16,0,0,0-9.11,28.06L66.61,153.8,53.09,212.34a16,16,0,0,0,23.84,17.34l51-31,51.11,31a16,16,0,0,0,23.84-17.34l-13.51-58.6,45.1-39.36A16,16,0,0,0,239.2,97.29Zm-15.22,5-45.1,39.36a16,16,0,0,0-5.08,15.71L187.35,216v0l-51.07-31a15.9,15.9,0,0,0-16.54,0l-51,31h0L82.2,157.4a16,16,0,0,0-5.08-15.71L32,102.35a.37.37,0,0,1,0-.09l59.44-5.14a16,16,0,0,0,13.35-9.75L128,32.08l23.2,55.29a16,16,0,0,0,13.35,9.75L224,102.26S224,102.32,224,102.33Z"></path></svg>
+</div>
+<p class="text-sm text-text-subtle-light dark:text-text-subtle-dark mt-1">120 reviews</p>
+</div>
+<div class="grid grid-cols-[auto_1fr_auto] items-center gap-x-3 gap-y-2 flex-1 w-full">
+<p class="text-sm text-text-subtle-light dark:text-text-subtle-dark">5</p>
+<div class="h-2 bg-primary/20 rounded-full"><div class="h-2 bg-primary rounded-full" style="width: 40%;"></div></div>
+<p class="text-sm font-medium text-text-light dark:text-text-dark text-right">40%</p>
+<p class="text-sm text-text-subtle-light dark:text-text-subtle-dark">4</p>
+<div class="h-2 bg-primary/20 rounded-full"><div class="h-2 bg-primary rounded-full" style="width: 30%;"></div></div>
+<p class="text-sm font-medium text-text-light dark:text-text-dark text-right">30%</p>
+<p class="text-sm text-text-subtle-light dark:text-text-subtle-dark">3</p>
+<div class="h-2 bg-primary/20 rounded-full"><div class="h-2 bg-primary rounded-full" style="width: 15%;"></div></div>
+<p class="text-sm font-medium text-text-light dark:text-text-dark text-right">15%</p>
+<p class="text-sm text-text-subtle-light dark:text-text-subtle-dark">2</p>
+<div class="h-2 bg-primary/20 rounded-full"><div class="h-2 bg-primary rounded-full" style="width: 10%;"></div></div>
+<p class="text-sm font-medium text-text-light dark:text-text-dark text-right">10%</p>
+<p class="text-sm text-text-subtle-light dark:text-text-subtle-dark">1</p>
+<div class="h-2 bg-primary/20 rounded-full"><div class="h-2 bg-primary rounded-full" style="width: 5%;"></div></div>
+<p class="text-sm font-medium text-text-light dark:text-text-dark text-right">5%</p>
+</div>
+</div>
+<div class="space-y-6">
+<div class="bg-component-light dark:bg-component-dark p-4 rounded-lg space-y-3">
+<div class="flex items-center gap-3">
+<img alt="Sophia Clark avatar" class="size-10 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAWYeOycvp78uuTmSz6h5UuaQZWEMTUIHtQOnaKnP0UcsQEIo4UqP80Cm6cmo9ES5tm73uBSGokbkrdTBOcaUYpw8pWF-ZiezkmWshiSCPPGg7y2H_4hSCB27lJSRFc4mXyQp6CHbU4XCOLX8T0QDYhbISXBOUgcIZiZL6zma3GsO7W41Eh2TkmipsESoHbqAkbtchy3UYonoVVGrEP5nHyjTpFFt0XbG2_12TaOpd4BKk5GQdBJptUoDmWBH8SxoJ4PXecAt4A2A"/>
+<div class="flex-1">
+<p class="font-medium text-text-light dark:text-text-dark">Sophia Clark</p>
+<p class="text-sm text-text-subtle-light dark:text-text-subtle-dark">2 weeks ago</p>
+</div>
+</div>
+<div class="flex gap-0.5">
+<svg class="icon-star-filled" fill="currentColor" height="20px" viewBox="0 0 256 256" width="20px"><path d="M234.5,114.38l-45.1,39.36,13.51,58.6a16,16,0,0,1-23.84,17.34l-51.11-31-51,31a16,16,0,0,1-23.84-17.34L66.61,153.8,21.5,114.38a16,16,0,0,1,9.11-28.06l59.46-5.15,23.21-55.36a15.95,15.95,0,0,1,29.44,0h0L166,81.17l59.44,5.15a16,16,0,0,1,9.11,28.06Z"></path></svg>
+<svg class="icon-star-filled" fill="currentColor" height="20px" viewBox="0 0 256 256" width="20px"><path d="M234.5,114.38l-45.1,39.36,13.51,58.6a16,16,0,0,1-23.84,17.34l-51.11-31-51,31a16,16,0,0,1-23.84-17.34L66.61,153.8,21.5,114.38a16,16,0,0,1,9.11-28.06l59.46-5.15,23.21-55.36a15.95,15.95,0,0,1,29.44,0h0L166,81.17l59.44,5.15a16,16,0,0,1,9.11,28.06Z"></path></svg>
+<svg class="icon-star-filled" fill="currentColor" height="20px" viewBox="0 0 256 256" width="20px"><path d="M234.5,114.38l-45.1,39.36,13.51,58.6a16,16,0,0,1-23.84,17.34l-51.11-31-51,31a16,16,0,0,1-23.84-17.34L66.61,153.8,21.5,114.38a16,16,0,0,1,9.11-28.06l59.46-5.15,23.21-55.36a15.95,15.95,0,0,1,29.44,0h0L166,81.17l59.44,5.15a16,16,0,0,1,9.11,28.06Z"></path></svg>
+<svg class="icon-star-filled" fill="currentColor" height="20px" viewBox="0 0 256 256" width="20px"><path d="M234.5,114.38l-45.1,39.36,13.51,58.6a16,16,0,0,1-23.84,17.34l-51.11-31-51,31a16,16,0,0,1-23.84-17.34L66.61,153.8,21.5,114.38a16,16,0,0,1,9.11-28.06l59.46-5.15,23.21-55.36a15.95,15.95,0,0,1,29.44,0h0L166,81.17l59.44,5.15a16,16,0,0,1,9.11,28.06Z"></path></svg>
+<svg class="icon-star-filled" fill="currentColor" height="20px" viewBox="0 0 256 256" width="20px"><path d="M234.5,114.38l-45.1,39.36,13.51,58.6a16,16,0,0,1-23.84,17.34l-51.11-31-51,31a16,16,0,0,1-23.84-17.34L66.61,153.8,21.5,114.38a16,16,0,0,1,9.11-28.06l59.46-5.15,23.21-55.36a15.95,15.95,0,0,1,29.44,0h0L166,81.17l59.44,5.15a16,16,0,0,1,9.11,28.06Z"></path></svg>
+</div>
+<p class="text-text-light dark:text-text-dark leading-relaxed">FoodLink has been a game-changer for our organization. The platform is easy to use, and we've received overwhelmingly positive feedback from the recipients. Thank you for making a difference!</p>
+<div class="flex gap-6 text-text-subtle-light dark:text-text-subtle-dark">
+<button class="flex items-center gap-2 hover:text-primary transition-colors"><svg fill="currentColor" height="20" viewBox="0 0 256 256" width="20" xmlns="http://www.w3.org/2000/svg"><path d="M234,80.12A24,24,0,0,0,216,72H160V56a40,40,0,0,0-40-40,8,8,0,0,0-7.16,4.42L75.06,96H32a16,16,0,0,0-16,16v88a16,16,0,0,0,16,16H204a24,24,0,0,0,23.82-21l12-96A24,24,0,0,0,234,80.12ZM32,112H72v88H32ZM223.94,97l-12,96a8,8,0,0,1-7.94,7H88V105.89l36.71-73.43A24,24,0,0,1,144,56V80a8,8,0,0,0,8,8h64a8,8,0,0,1,7.94,9Z"></path></svg> 15</button>
+<button class="flex items-center gap-2 hover:text-primary transition-colors"><svg fill="currentColor" height="20" viewBox="0 0 256 256" width="20" xmlns="http://www.w3.org/2000/svg"><path d="M239.82,157l-12-96A24,24,0,0,0,204,40H32A16,16,0,0,0,16,56v88a16,16,0,0,0,16,16H75.06l37.78,75.58A8,8,0,0,0,120,240a40,40,0,0,0,40-40V184h56a24,24,0,0,0,23.82-27ZM72,144H32V56H72Zm150,21.29a7.88,7.88,0,0,1-6,2.71H152a8,8,0,0,0-8,8v24a24,24,0,0,1-19.29,23.54L88,150.11V56H204a8,8,0,0,1,7.94,7l12,96A7.87,7.87,0,0,1,222,165.29Z"></path></svg> 2</button>
+</div>
+</div>
+<div class="bg-component-light dark:bg-component-dark p-4 rounded-lg space-y-3">
+<div class="flex items-center gap-3">
+<img alt="Ethan Miller avatar" class="size-10 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCMfsJlAHsp1oIpjGn8r1LHOSWiJr8EZ6pdlgJLqElOryeANuPgat68qhMefDFcPusRMLhjJl-vnTg4b5K28mBwd0GNWryVcp97w_O5fd9EzD8PmqK36xdo0_N43fuMXAIiN371qvAh9SQYxilj_acxmHzfL_Dy1uogCEgnuXXHhpBkVsgLtB4fnkSDjXGl7RitjVJfdGkOw6uhJePYGBpGN2sxS5sg8gn7Nz2zEPwxkPqf8YJawABQHvOJbmANktoS4vGyy2SpGw"/>
+<div class="flex-1">
+<p class="font-medium text-text-light dark:text-text-dark">Ethan Miller</p>
+<p class="text-sm text-text-subtle-light dark:text-text-subtle-dark">1 month ago</p>
+</div>
+</div>
+<div class="flex gap-0.5">
+<svg class="icon-star-filled" fill="currentColor" height="20px" viewBox="0 0 256 256" width="20px"><path d="M234.5,114.38l-45.1,39.36,13.51,58.6a16,16,0,0,1-23.84,17.34l-51.11-31-51,31a16,16,0,0,1-23.84-17.34L66.61,153.8,21.5,114.38a16,16,0,0,1,9.11-28.06l59.46-5.15,23.21-55.36a15.95,15.95,0,0,1,29.44,0h0L166,81.17l59.44,5.15a16,16,0,0,1,9.11,28.06Z"></path></svg>
+<svg class="icon-star-filled" fill="currentColor" height="20px" viewBox="0 0 256 256" width="20px"><path d="M234.5,114.38l-45.1,39.36,13.51,58.6a16,16,0,0,1-23.84,17.34l-51.11-31-51,31a16,16,0,0,1-23.84-17.34L66.61,153.8,21.5,114.38a16,16,0,0,1,9.11-28.06l59.46-5.15,23.21-55.36a15.95,15.95,0,0,1,29.44,0h0L166,81.17l59.44,5.15a16,16,0,0,1,9.11,28.06Z"></path></svg>
+<svg class="icon-star-filled" fill="currentColor" height="20px" viewBox="0 0 256 256" width="20px"><path d="M234.5,114.38l-45.1,39.36,13.51,58.6a16,16,0,0,1-23.84,17.34l-51.11-31-51,31a16,16,0,0,1-23.84-17.34L66.61,153.8,21.5,114.38a16,16,0,0,1,9.11-28.06l59.46-5.15,23.21-55.36a15.95,15.95,0,0,1,29.44,0h0L166,81.17l59.44,5.15a16,16,0,0,1,9.11,28.06Z"></path></svg>
+<svg class="icon-star-filled" fill="currentColor" height="20px" viewBox="0 0 256 256" width="20px"><path d="M234.5,114.38l-45.1,39.36,13.51,58.6a16,16,0,0,1-23.84,17.34l-51.11-31-51,31a16,16,0,0,1-23.84-17.34L66.61,153.8,21.5,114.38a16,16,0,0,1,9.11-28.06l59.46-5.15,23.21-55.36a15.95,15.95,0,0,1,29.44,0h0L166,81.17l59.44,5.15a16,16,0,0,1,9.11,28.06Z"></path></svg>
+<svg class="icon-star-empty" fill="currentColor" height="20px" viewBox="0 0 256 256" width="20px"><path d="M239.2,97.29a16,16,0,0,0-13.81-11L166,81.17,142.72,25.81h0a15.95,15.95,0,0,0-29.44,0L90.07,81.17,30.61,86.32a16,16,0,0,0-9.11,28.06L66.61,153.8,53.09,212.34a16,16,0,0,0,23.84,17.34l51-31,51.11,31a16,16,0,0,0,23.84-17.34l-13.51-58.6,45.1-39.36A16,16,0,0,0,239.2,97.29Zm-15.22,5-45.1,39.36a16,16,0,0,0-5.08,15.71L187.35,216v0l-51.07-31a15.9,15.9,0,0,0-16.54,0l-51,31h0L82.2,157.4a16,16,0,0,0-5.08-15.71L32,102.35a.37.37,0,0,1,0-.09l59.44-5.14a16,16,0,0,0,13.35-9.75L128,32.08l23.2,55.29a16,16,0,0,0,13.35,9.75L224,102.26S224,102.32,224,102.33Z"></path></svg>
+</div>
+<p class="text-text-light dark:text-text-dark leading-relaxed">The feedback feature is helpful in understanding the impact of our donations. While most responses are positive, it's great to have a channel for constructive criticism.</p>
+<div class="flex gap-6 text-text-subtle-light dark:text-text-subtle-dark">
+<button class="flex items-center gap-2 hover:text-primary transition-colors"><svg fill="currentColor" height="20" viewBox="0 0 256 256" width="20" xmlns="http://www.w3.org/2000/svg"><path d="M234,80.12A24,24,0,0,0,216,72H160V56a40,40,0,0,0-40-40,8,8,0,0,0-7.16,4.42L75.06,96H32a16,16,0,0,0-16,16v88a16,16,0,0,0,16,16H204a24,24,0,0,0,23.82-21l12-96A24,24,0,0,0,234,80.12ZM32,112H72v88H32ZM223.94,97l-12,96a8,8,0,0,1-7.94,7H88V105.89l36.71-73.43A24,24,0,0,1,144,56V80a8,8,0,0,0,8,8h64a8,8,0,0,1,7.94,9Z"></path></svg> 8</button>
+<button class="flex items-center gap-2 hover:text-primary transition-colors"><svg fill="currentColor" height="20" viewBox="0 0 256 256" width="20" xmlns="http://www.w3.org/2000/svg"><path d="M239.82,157l-12-96A24,24,0,0,0,204,40H32A16,16,0,0,0,16,56v88a16,16,0,0,0,16,16H75.06l37.78,75.58A8,8,0,0,0,120,240a40,40,0,0,0,40-40V184h56a24,24,0,0,0,23.82-27ZM72,144H32V56H72Zm150,21.29a7.88,7.88,0,0,1-6,2.71H152a8,8,0,0,0-8,8v24a24,24,0,0,1-19.29,23.54L88,150.11V56H204a8,8,0,0,1,7.94,7l12,96A7.87,7.87,0,0,1,222,165.29Z"></path></svg> 1</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+<footer class="bg-component-light dark:bg-component-dark border-t border-border-light dark:border-border-dark shadow-t-lg">
+<nav class="flex justify-around p-2">
+<a class="flex flex-col items-center gap-1 text-text-subtle-light dark:text-text-subtle-dark hover:text-primary dark:hover:text-primary transition-colors p-2" href="#">
+<svg fill="currentColor" height="24" viewBox="0 0 256 256" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M218.83,103.77l-80-75.48a1.14,1.14,0,0,1-.11-.11,16,16,0,0,0-21.53,0l-.11.11L37.17,103.77A16,16,0,0,0,32,115.55V208a16,16,0,0,0,16,16H96a16,16,0,0,0,16-16V160h32v48a16,16,0,0,0,16,16h48a16,16,0,0,0,16-16V115.55A16,16,0,0,0,218.83,103.77ZM208,208H160V160a16,16,0,0,0-16-16H112a16,16,0,0,0-16,16v48H48V115.55l.11-.1L128,40l79.9,75.43.11.1Z"></path></svg>
+<span class="text-xs font-medium">Home</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-text-subtle-light dark:text-text-subtle-dark hover:text-primary dark:hover:text-primary transition-colors p-2" href="#">
+<svg fill="currentColor" height="24" viewBox="0 0 256 256" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M230.33,141.06a24.34,24.34,0,0,0-18.61-4.77C230.5,117.33,240,98.48,240,80c0-26.47-21.29-48-47.46-48A47.58,47.58,0,0,0,156,48.75,47.58,47.58,0,0,0,119.46,32C93.29,32,72,53.53,72,80c0,11,3.24,21.69,10.06,33a31.87,31.87,0,0,0-14.75,8.4L44.69,144H16a16,16,0,0,0,0,160v40a16,16,0,0,0,16,16H120a7.93,7.93,0,0,0,1.94-.24l64-16a6.94,6.94,0,0,0,1.19-.4L226,182.82l.44-.2a24.6,24.6,0,0,0,3.93-41.56ZM119.46,48A31.15,31.15,0,0,1,148.6,67a8,8,0,0,0,14.8,0,31.15,31.15,0,0,1,29.14-19C209.59,48,224,62.65,224,80c0,19.51-15.79,41.58-45.66,63.9l-11.09,2.55A28,28,0,0,0,140,112H100.68C92.05,100.36,88,90.12,88,80,88,62.65,102.41,48,119.46,48ZM16,160H40v40H16Zm203.43,8.21-38,16.18L119,200H56V155.31l22.63-22.62A15.86,15.86,0,0,1,89.94,128H140a12,12,0,0,1,0,24H112a8,8,0,0,0,0,16h32a8.32,8.32,0,0,0,1.79-.2l67-15.41.31-.08a8.6,8.6,0,0,1,6.3,15.9Z"></path></svg>
+<span class="text-xs font-medium">Donations</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-text-subtle-light dark:text-text-subtle-dark hover:text-primary dark:hover:text-primary transition-colors p-2" href="#">
+<svg fill="currentColor" height="24" viewBox="0 0 256 256" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M208,32H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32Zm0,16V152h-28.7A15.86,15.86,0,0,0,168,156.69L148.69,176H107.31L88,156.69A15.86,15.86,0,0,0,76.69,152H48V48Zm0,160H48V168H76.69L96,187.31A15.86,15.86,0,0,0,107.31,192h41.38A15.86,15.86,0,0,0,160,187.31L179.31,168H208v40Z"></path></svg>
+<span class="text-xs font-medium">Requests</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-text-subtle-light dark:text-text-subtle-dark hover:text-primary dark:hover:text-primary transition-colors p-2" href="#">
+<svg fill="currentColor" height="24" viewBox="0 0 256 256" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M72,104a8,8,0,0,1,8-8h96a8,8,0,0,1,0,16H80A8,8,0,0,1,72,104Zm8,40h96a8,8,0,0,0,0-16H80a8,8,0,0,0,0,16ZM232,56V208a8,8,0,0,1-11.58,7.15L192,200.94l-28.42,14.21a8,8,0,0,1-7.16,0L128,200.94,99.58,215.15a8,8,0,0,1-7.16,0L64,200.94,35.58,215.15A8,8,0,0,1,24,208V56A16,16,0,0,1,40,40H216A16,16,0,0,1,232,56Zm-16,0H40V195.06l20.42-10.22a8,8,0,0,1,7.16,0L96,199.06l28.42-14.22a8,8,0,0,1,7.16,0L160,199.06l28.42-14.22a8,8,0,0,1,7.16,0L216,195.06Z"></path></svg>
+<span class="text-xs font-medium">Transactions</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-primary dark:text-primary p-2 bg-primary/20 rounded-lg" href="#">
+<svg fill="currentColor" height="24" viewBox="0 0 256 256" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M230.93,220a8,8,0,0,1-6.93,4H32a8,8,0,0,1-6.92-12c15.23-26.33,38.7-45.21,66.09-54.16a72,72,0,1,1,73.66,0c27.39,8.95,50.86,27.83,66.09,54.16A8,8,0,0,1,230.93,220Z"></path></svg>
+<span class="text-xs font-medium">Profile</span>
+</a>
+</nav>
+</footer>
+</div>
+
+</body></html>
