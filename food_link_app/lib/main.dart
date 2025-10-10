@@ -1,10 +1,10 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'services/api_service.dart';
 import 'services/theme_provider.dart';
 import 'services/search_filter_service.dart';
@@ -13,28 +13,18 @@ import 'models/request_model.dart';
 import 'models/sort_option.dart';
 import 'models/user_model.dart';
 import 'services/offline_queue.dart';
-import 'widgets/dashboard_card.dart';
 import 'widgets/offline_indicator.dart';
 import 'widgets/search_filter_widget.dart';
 import 'utils/app_strings.dart';
 import 'utils/app_colors.dart';
 import 'utils/error_handler.dart';
-import 'screens/registration_screens.dart';
-import 'screens/dashboard/dashboard_screens.dart';
 import 'screens/donation_detail_screen.dart';
-import 'screens/enhanced_map_screen.dart';
-import 'screens/nearby_donations_screen.dart';
-import 'services/location_service.dart';
 import 'utils/validators.dart';
 import 'user_state.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
-import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:geolocator/geolocator.dart';
-import 'dart:async';
-import 'dart:ui' show PlatformDispatcher;
 
 class CustomCachedImage extends StatelessWidget {
   final String imageUrl;
@@ -95,9 +85,9 @@ class DashboardCard extends StatelessWidget {
       elevation: 2,
       color: AppColors.cardLight,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
           ClipRRect(
             borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
             child: CustomCachedImage(
@@ -117,44 +107,39 @@ class DashboardCard extends StatelessWidget {
           ),
           Padding(
             padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  description,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppColors.subtleLight,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: onPressed,
-                    style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.all<Color>(Colors.green),
-                      foregroundColor: MaterialStateProperty.all<Color>(Colors.black),
-                      minimumSize: MaterialStateProperty.all<Size>(const Size(double.infinity, 56)),
-                      shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                        RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ),
-                      elevation: MaterialStateProperty.all<double>(0),
-                    ),
-                    child: Text(buttonText),
+                const SizedBox(height: 8),
+                        Text(
+                          description,
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: AppColors.subtleLight,
+                          ),
+                        ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: onPressed,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                  foregroundColor: Colors.black,
+                  minimumSize: const Size(double.infinity, 56),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
                   ),
+                  elevation: 0,
                 ),
-              ],
-            ),
+                child: Text(buttonText),
+              ),
+            ],
           ),
+        ),
         ],
       ),
     );
@@ -195,15 +180,15 @@ class DonationListItem extends StatelessWidget {
   Color _getStatusBackgroundColor(String status) {
     switch (status) {
       case AppStrings.statusPending:
-        return AppColors.statusPending.withOpacity(0.1);
+        return AppColors.statusPending.withValues(alpha: 0.1);
       case AppStrings.statusVerified:
-        return AppColors.statusVerified.withOpacity(0.1);
+        return AppColors.statusVerified.withValues(alpha: 0.1);
       case AppStrings.statusAllocated:
-        return AppColors.statusAllocated.withOpacity(0.1);
+        return AppColors.statusAllocated.withValues(alpha: 0.1);
       case AppStrings.statusDelivered:
-        return AppColors.statusDelivered.withOpacity(0.1);
+        return AppColors.statusDelivered.withValues(alpha: 0.1);
       case AppStrings.statusExpired:
-        return AppColors.statusExpired.withOpacity(0.1);
+        return AppColors.statusExpired.withValues(alpha: 0.1);
       default:
         return AppColors.backgroundLight;
     }
@@ -356,15 +341,7 @@ class DonationListItem extends StatelessWidget {
 }
 
 // --- State Preservation Mixin ---
-mixin StatePreservationMixin<T extends StatefulWidget> on State<T> {
-  @override
-  bool get wantKeepAlive => true;
-
-  @override
-  void updateKeepAlive() {
-    // This method is called when the widget's keep alive state changes
-  }
-}
+// Removed - using AutomaticKeepAliveClientMixin directly where needed
 
 // --- Performance Utilities ---
 class PerformanceUtils {
@@ -383,15 +360,6 @@ class PerformanceUtils {
 // --- Main App Widget ---
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
-  // Initialize SharedPreferences
-  final prefs = await SharedPreferences.getInstance();
-  
-  // Set preferred orientations
-  await SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-    DeviceOrientation.portraitDown,
-  ]);
   
   debugPrint('🚀 Starting FoodLink App...');
   
@@ -503,8 +471,7 @@ class FoodLinkSplashScreen extends StatefulWidget {
   State<FoodLinkSplashScreen> createState() => _FoodLinkSplashScreenState();
 }
 
-class _FoodLinkSplashScreenState extends State<FoodLinkSplashScreen>
-    with StatePreservationMixin {
+class _FoodLinkSplashScreenState extends State<FoodLinkSplashScreen> {
 
   @override
   void initState() {
@@ -648,71 +615,60 @@ class UserRoleSelectionScreen extends StatelessWidget {
                         'Choose your role to get started with FoodLink',
                         textAlign: TextAlign.center,
                         style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color: AppColors.foregroundLight.withOpacity(0.7),
+                          color: AppColors.foregroundLight.withValues(alpha: 0.7),
                         ),
                       ),
                       const SizedBox(height: 32),
                       // Donor Button
-                      SizedBox(
-                        width: double.infinity,
-                        height: 56,
-                        child: ElevatedButton(
-                          onPressed: () => Navigator.pushNamed(context, AppStrings.routeRegisterDonor),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primary,
-                            foregroundColor: Colors.black,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            elevation: 0,
+                      ElevatedButton(
+                        onPressed: () => Navigator.pushNamed(context, AppStrings.routeRegisterDonor),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          foregroundColor: Colors.black,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
                           ),
-                          child: const Text(
-                            'Donor',
-                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                          ),
+                          elevation: 0,
                         ),
+                        child: const Text(
+                          'Donor',
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                      ),
                       const SizedBox(height: 16),
                       // NGO Button
-                      const SizedBox(height: 16),
-                      SizedBox(
-                        width: double.infinity,
-                        height: 56,
-                        child: ElevatedButton(
-                          onPressed: () => Navigator.pushNamed(context, AppStrings.routeRegisterNGO),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primary.withOpacity(0.2),
-                            foregroundColor: AppColors.foregroundLight,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            elevation: 0,
+                      ElevatedButton(
+                        onPressed: () => Navigator.pushNamed(context, AppStrings.routeRegisterNGO),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary.withValues(alpha: 0.2),
+                          foregroundColor: AppColors.foregroundLight,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
                           ),
-                          child: const Text(
-                            'NGO',
-                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                          ),
+                          elevation: 0,
                         ),
+                        child: const Text(
+                          'NGO',
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                      ),
                       const SizedBox(height: 16),
                       // Receiver Button
-                      const SizedBox(height: 16),
-                      SizedBox(
-                        width: double.infinity,
-                        height: 56,
-                        child: ElevatedButton(
-                          onPressed: () => Navigator.pushNamed(context, AppStrings.routeRegisterReceiver),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primary.withOpacity(0.2),
-                            foregroundColor: AppColors.foregroundLight,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            elevation: 0,
+                      ElevatedButton(
+                        onPressed: () => Navigator.pushNamed(context, AppStrings.routeRegisterReceiver),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary.withValues(alpha: 0.2),
+                          foregroundColor: AppColors.foregroundLight,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
                           ),
-                          child: const Text(
-                            'Receiver',
-                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                          ),
+                          elevation: 0,
                         ),
+                        child: const Text(
+                          'Receiver',
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -724,7 +680,7 @@ class UserRoleSelectionScreen extends StatelessWidget {
             decoration: BoxDecoration(
               border: Border(
                 top: BorderSide(
-                  color: AppColors.foregroundLight.withOpacity(0.1),
+                  color: AppColors.foregroundLight.withValues(alpha: 0.1),
                   width: 1,
                 ),
               ),
@@ -733,7 +689,7 @@ class UserRoleSelectionScreen extends StatelessWidget {
               type: BottomNavigationBarType.fixed,
               backgroundColor: AppColors.backgroundLight,
               selectedItemColor: AppColors.primary,
-              unselectedItemColor: AppColors.foregroundLight.withOpacity(0.6),
+              unselectedItemColor: AppColors.foregroundLight.withValues(alpha: 0.6),
               selectedFontSize: 12,
               unselectedFontSize: 12,
               currentIndex: 0,
@@ -775,12 +731,262 @@ class LoginScreen extends StatefulWidget {
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> with StatePreservationMixin {
+class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   String? _selectedRole;
   bool _loading = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              AppColors.backgroundLight,
+              AppColors.backgroundLight.withValues(alpha: 0.8),
+            ],
+          ),
+        ),
+        child: SafeArea(
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Container(
+                constraints: const BoxConstraints(maxWidth: 400),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // Header
+                      Container(
+                        margin: const EdgeInsets.only(bottom: 32),
+                        child: Column(
+                          children: [
+                            Text(
+                              AppStrings.appName,
+                              style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.foregroundLight,
+                                fontSize: 28,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Welcome back! Please log in.',
+                              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                                color: AppColors.subtleLight,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      // Email Field
+      Container(
+        margin: const EdgeInsets.only(bottom: 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Email',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                fontWeight: FontWeight.w500,
+                color: AppColors.subtleLight,
+                fontSize: 14,
+              ),
+            ),
+            const SizedBox(height: 4),
+            TextFormField(
+              controller: _emailController,
+              keyboardType: TextInputType.emailAddress,
+              decoration: InputDecoration(
+                hintText: 'you@example.com',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: const BorderSide(color: AppColors.borderLight),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: const BorderSide(color: AppColors.borderLight),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: const BorderSide(color: AppColors.primary, width: 2),
+                ),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              ),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter your email';
+                }
+                if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
+                  return 'Please enter a valid email address';
+                }
+                return null;
+              },
+            ),
+          ],
+        ),
+      ),
+
+      // Password Field
+      Container(
+        margin: const EdgeInsets.only(bottom: 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Password',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                fontWeight: FontWeight.w500,
+                color: AppColors.subtleLight,
+                fontSize: 14,
+              ),
+            ),
+            const SizedBox(height: 4),
+            TextFormField(
+              controller: _passwordController,
+              obscureText: true,
+              decoration: InputDecoration(
+                hintText: '••••••••',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: const BorderSide(color: AppColors.borderLight),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: const BorderSide(color: AppColors.borderLight),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: const BorderSide(color: AppColors.primary, width: 2),
+                ),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              ),
+              validator: (value) =>
+                  (value == null || value.isEmpty) ? 'Please enter your password' : null,
+            ),
+          ],
+        ),
+      ),
+
+      // Role Field
+      Container(
+        margin: const EdgeInsets.only(bottom: 24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Role',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                fontWeight: FontWeight.w500,
+                color: AppColors.subtleLight,
+                fontSize: 14,
+              ),
+            ),
+            const SizedBox(height: 4),
+            DropdownButtonFormField<String>(
+              initialValue: _selectedRole,
+              decoration: InputDecoration(
+                hintText: 'Select your role',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: const BorderSide(color: AppColors.borderLight),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: const BorderSide(color: AppColors.borderLight),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: const BorderSide(color: AppColors.primary, width: 2),
+                ),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              ),
+              items: const [AppStrings.roleDonor, AppStrings.roleNGO, AppStrings.roleReceiver]
+                  .map((role) => DropdownMenuItem(value: role, child: Text(role)))
+                  .toList(),
+              onChanged: (value) => setState(() => _selectedRole = value),
+              validator: (value) => value == null ? 'Please select a role' : null,
+            ),
+          ],
+        ),
+      ),
+
+      // Login Button
+      ElevatedButton(
+        onPressed: _loading ? null : _login,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.primary,
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+          elevation: 0,
+        ),
+        child: _loading
+            ? const SizedBox(
+                height: 20,
+                width: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                ),
+              )
+            : const Text(
+                'Login',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+      ),
+      // Footer
+      Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          TextButton(
+            onPressed: () => Navigator.pushNamed(context, AppStrings.routeRoleSelection),
+            child: const Text(
+              'Don\'t have an account? Register',
+              style: TextStyle(
+                color: AppColors.primary,
+                fontWeight: FontWeight.w500,
+                decoration: TextDecoration.underline,
+              ),
+            ),
+          ),
+          const SizedBox(width: 16),
+          TextButton(
+            onPressed: () => Navigator.pushNamed(context, '/admin-login'),
+            child: const Text(
+              'Admin Login',
+              style: TextStyle(
+                color: AppColors.subtleLight,
+                fontWeight: FontWeight.w500,
+                decoration: TextDecoration.underline,
+              ),
+            ),
+          ),
+        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 
   @override
   void dispose() {
@@ -833,244 +1039,6 @@ class _LoginScreenState extends State<LoginScreen> with StatePreservationMixin {
         const SnackBar(content: Text('Please select a role and fill fields.')),
       );
     }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        color: AppColors.backgroundLight,
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Container(
-              constraints: const BoxConstraints(maxWidth: 400),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // Header
-                  Container(
-                    margin: const EdgeInsets.only(bottom: 32),
-                    child: Column(
-                      children: [
-                        Text(
-                          AppStrings.appName,
-                          style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.foregroundLight,
-                            fontSize: 28,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Welcome back! Please log in.',
-                          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            color: AppColors.subtleLight,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  // Form
-                  Container(
-                    margin: const EdgeInsets.only(bottom: 32),
-                    child: Column(
-                      children: [
-                        // Email Field
-                        Container(
-                          margin: const EdgeInsets.only(bottom: 16),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Email',
-                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                  fontWeight: FontWeight.w500,
-                                  color: AppColors.subtleLight,
-                                  fontSize: 14,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              TextFormField(
-                                controller: _emailController,
-                                keyboardType: TextInputType.emailAddress,
-                                decoration: InputDecoration(
-                                  hintText: 'you@example.com',
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide: BorderSide(color: AppColors.borderLight),
-                                  ),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide: BorderSide(color: AppColors.borderLight),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide: BorderSide(color: AppColors.primary, width: 2),
-                                  ),
-                                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                                ),
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return 'Please enter your email';
-                                  }
-                                  if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
-                                    return 'Please enter a valid email address';
-                                  }
-                                  return null;
-                                },
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        // Password Field
-                        Container(
-                          margin: const EdgeInsets.only(bottom: 16),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Password',
-                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                  fontWeight: FontWeight.w500,
-                                  color: AppColors.subtleLight,
-                                  fontSize: 14,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              TextFormField(
-                                controller: _passwordController,
-                                obscureText: true,
-                                decoration: InputDecoration(
-                                  hintText: '••••••••',
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide: BorderSide(color: AppColors.borderLight),
-                                  ),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide: BorderSide(color: AppColors.borderLight),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide: BorderSide(color: AppColors.primary, width: 2),
-                                  ),
-                                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                                ),
-                                validator: (value) =>
-                                    (value == null || value.isEmpty) ? 'Please enter your password' : null,
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        // Role Field
-                        Container(
-                          margin: const EdgeInsets.only(bottom: 24),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Role',
-                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                  fontWeight: FontWeight.w500,
-                                  color: AppColors.subtleLight,
-                                  fontSize: 14,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              DropdownButtonFormField<String>(
-                                value: _selectedRole,
-                                decoration: InputDecoration(
-                                  hintText: 'Select your role',
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide: BorderSide(color: AppColors.borderLight),
-                                  ),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide: BorderSide(color: AppColors.borderLight),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide: BorderSide(color: AppColors.primary, width: 2),
-                                  ),
-                                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                                ),
-                                items: const [AppStrings.roleDonor, AppStrings.roleNGO, AppStrings.roleReceiver]
-                                    .map((role) => DropdownMenuItem(value: role, child: Text(role)))
-                                    .toList(),
-                                onChanged: (value) => setState(() => _selectedRole = value),
-                                validator: (value) => value == null ? 'Please select a role' : null,
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        // Login Button
-                        SizedBox(
-                          width: double.infinity,
-                          height: 56,
-                          child: ElevatedButton(
-                            onPressed: _loading ? null : _login,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.primary,
-                              foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              elevation: 0,
-                            ),
-                          child: _loading
-                              ? const SizedBox(
-                                  height: 20,
-                                  width: 20,
-                                  child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                                )
-                              : const Text('Log In', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  // Footer
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      TextButton(
-                        onPressed: () => Navigator.pushNamed(context, AppStrings.routeRoleSelection),
-                        child: Text(
-                          'Don\'t have an account? Register',
-                          style: TextStyle(
-                            color: AppColors.primary,
-                            fontWeight: FontWeight.w500,
-                            decoration: TextDecoration.underline,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      TextButton(
-                        onPressed: () => Navigator.pushNamed(context, '/admin-login'),
-                        child: Text(
-                          'Admin Login',
-                          style: TextStyle(
-                            color: AppColors.subtleLight,
-                            fontWeight: FontWeight.w500,
-                            decoration: TextDecoration.underline,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
   }
 }
 
@@ -1142,7 +1110,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                           Container(
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
-                              color: AppColors.primary.withOpacity(0.1),
+                              color: AppColors.primary.withValues(alpha: 0.1),
                               shape: BoxShape.circle,
                             ),
                             child: Icon(
@@ -1271,7 +1239,6 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppColors.primary,
                               foregroundColor: Colors.white,
-                              minimumSize: const Size(double.infinity, 56),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8),
                               ),
@@ -1320,8 +1287,7 @@ class DonorRegistrationScreen extends StatefulWidget {
   State<DonorRegistrationScreen> createState() => _DonorRegistrationScreenState();
 }
 
-class _DonorRegistrationScreenState extends State<DonorRegistrationScreen>
-    with StatePreservationMixin {
+class _DonorRegistrationScreenState extends State<DonorRegistrationScreen> {
   
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
@@ -1480,17 +1446,7 @@ class _DonorRegistrationScreenState extends State<DonorRegistrationScreen>
                 children: [
                   ElevatedButton(
                     onPressed: _loading ? null : _register,
-                                        style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.all<Color>(Colors.green),
-                      foregroundColor: MaterialStateProperty.all<Color>(Colors.black),
-                      minimumSize: MaterialStateProperty.all<Size>(const Size(double.infinity, 56)),
-                      shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                        RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      elevation: MaterialStateProperty.all<double>(0),
-                    ),,
+                    style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,
                       foregroundColor: Colors.black,
                       shape: RoundedRectangleBorder(
@@ -1535,8 +1491,7 @@ class NGORegistrationScreen extends StatefulWidget {
   State<NGORegistrationScreen> createState() => _NGORegistrationScreenState();
 }
 
-class _NGORegistrationScreenState extends State<NGORegistrationScreen>
-    with StatePreservationMixin {
+class _NGORegistrationScreenState extends State<NGORegistrationScreen> {
   
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
@@ -1713,17 +1668,7 @@ class _NGORegistrationScreenState extends State<NGORegistrationScreen>
               padding: const EdgeInsets.all(24),
               child: ElevatedButton(
                 onPressed: _loading ? null : _register,
-                                    style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.all<Color>(Colors.green),
-                      foregroundColor: MaterialStateProperty.all<Color>(Colors.black),
-                      minimumSize: MaterialStateProperty.all<Size>(const Size(double.infinity, 56)),
-                      shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                        RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      elevation: MaterialStateProperty.all<double>(0),
-                    ),,
+                style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
                   foregroundColor: Colors.black,
                   shape: RoundedRectangleBorder(
@@ -1754,8 +1699,7 @@ class ReceiverRegistrationScreen extends StatefulWidget {
   State<ReceiverRegistrationScreen> createState() => _ReceiverRegistrationScreenState();
 }
 
-class _ReceiverRegistrationScreenState extends State<ReceiverRegistrationScreen>
-    with StatePreservationMixin {
+class _ReceiverRegistrationScreenState extends State<ReceiverRegistrationScreen> {
   
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
@@ -1918,23 +1862,14 @@ class _ReceiverRegistrationScreenState extends State<ReceiverRegistrationScreen>
                 children: [
                   ElevatedButton(
                     onPressed: _loading ? null : _register,
-                                        style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.all<Color>(Colors.green),
-                      foregroundColor: MaterialStateProperty.all<Color>(Colors.black),
-                      minimumSize: MaterialStateProperty.all<Size>(const Size(double.infinity, 56)),
-                      shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                        RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      elevation: MaterialStateProperty.all<double>(0),
-                    ),,
+                    style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,
                       foregroundColor: Colors.black,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
                       elevation: 0,
+                      minimumSize: const Size(double.infinity, 56),
                     ),
                     child: _loading
                         ? const SizedBox(
@@ -1992,18 +1927,18 @@ class _DonorHomeDashboardState extends State<DonorHomeDashboard>
     return Scaffold(
       backgroundColor: AppColors.backgroundLight,
       appBar: AppBar(
-        backgroundColor: AppColors.backgroundLight.withOpacity(0.8),
+        backgroundColor: AppColors.backgroundLight.withValues(alpha: 0.8),
         elevation: 0,
         title: Text(
           AppStrings.appName,
           style: TextStyle(
             fontWeight: FontWeight.bold,
-            color: AppColors.foregroundLight.withOpacity(0.9),
+            color: AppColors.foregroundLight.withValues(alpha: 0.9),
           ),
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.notifications_outlined, color: AppColors.foregroundLight.withOpacity(0.7)),
+            icon: Icon(Icons.notifications_outlined, color: AppColors.foregroundLight.withValues(alpha: 0.7)),
             onPressed: () {},
           ),
         ],
@@ -2021,7 +1956,7 @@ class _DonorHomeDashboardState extends State<DonorHomeDashboard>
                     'Welcome, ${user.name}',
                     style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                       fontWeight: FontWeight.bold,
-                      color: AppColors.foregroundLight.withOpacity(0.9),
+                      color: AppColors.foregroundLight.withValues(alpha: 0.9),
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -2055,9 +1990,9 @@ class _DonorHomeDashboardState extends State<DonorHomeDashboard>
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: AppColors.backgroundLight.withOpacity(0.8),
+        backgroundColor: AppColors.backgroundLight.withValues(alpha: 0.8),
         selectedItemColor: AppColors.primary,
-        unselectedItemColor: AppColors.foregroundLight.withOpacity(0.6),
+        unselectedItemColor: AppColors.foregroundLight.withValues(alpha: 0.6),
         type: BottomNavigationBarType.fixed,
         selectedFontSize: 11,
         unselectedFontSize: 11,
@@ -2069,9 +2004,15 @@ class _DonorHomeDashboardState extends State<DonorHomeDashboard>
         ],
         currentIndex: 0,
         onTap: (index) {
-          if (index == 1) Navigator.pushNamed(context, AppStrings.routeViewDonations);
-          if (index == 2) Navigator.pushNamed(context, AppStrings.routeTrackRequestStatus);
-          if (index == 3) Navigator.pushNamed(context, AppStrings.routeDonorProfile);
+          if (index == 1) {
+            Navigator.pushNamed(context, AppStrings.routeViewDonations);
+          }
+          if (index == 2) {
+            Navigator.pushNamed(context, AppStrings.routeTrackRequestStatus);
+          }
+          if (index == 3) {
+            Navigator.pushNamed(context, AppStrings.routeDonorProfile);
+          }
         },
       ),
       // Chat disabled - enable after Firebase setup
@@ -2119,7 +2060,7 @@ class _ReceiverHomeDashboardState extends State<ReceiverHomeDashboard>
     return Scaffold(
       backgroundColor: AppColors.backgroundLight,
       appBar: AppBar(
-        backgroundColor: AppColors.backgroundLight.withOpacity(0.8),
+        backgroundColor: AppColors.backgroundLight.withValues(alpha: 0.8),
         elevation: 0,
         title: Text(
           AppStrings.appName,
@@ -2175,7 +2116,7 @@ class _ReceiverHomeDashboardState extends State<ReceiverHomeDashboard>
         ),
       ),
       bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: AppColors.backgroundLight.withOpacity(0.8),
+        backgroundColor: AppColors.backgroundLight.withValues(alpha: 0.8),
         selectedItemColor: AppColors.primary,
         unselectedItemColor: AppColors.subtleLight,
         type: BottomNavigationBarType.fixed,
@@ -2189,9 +2130,15 @@ class _ReceiverHomeDashboardState extends State<ReceiverHomeDashboard>
         ],
         currentIndex: 0,
         onTap: (index) {
-          if (index == 1) Navigator.pushNamed(context, AppStrings.routeViewDonations);
-          if (index == 2) Navigator.pushNamed(context, AppStrings.routeTrackRequestStatus);
-          if (index == 3) Navigator.pushNamed(context, AppStrings.routeReceiverProfile);
+          if (index == 1) {
+            Navigator.pushNamed(context, AppStrings.routeViewDonations);
+          }
+          if (index == 2) {
+            Navigator.pushNamed(context, AppStrings.routeTrackRequestStatus);
+          }
+          if (index == 3) {
+            Navigator.pushNamed(context, AppStrings.routeReceiverProfile);
+          }
         },
       ),
     );
@@ -2223,7 +2170,7 @@ class _NGOHomeDashboardState extends State<NGOHomeDashboard>
     return Scaffold(
       backgroundColor: AppColors.backgroundLight,
       appBar: AppBar(
-        backgroundColor: AppColors.backgroundLight.withOpacity(0.8),
+        backgroundColor: AppColors.backgroundLight.withValues(alpha: 0.8),
         elevation: 0,
         title: Text(
           AppStrings.appName,
@@ -2288,7 +2235,7 @@ class _NGOHomeDashboardState extends State<NGOHomeDashboard>
         ),
       ),
       bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: AppColors.backgroundLight.withOpacity(0.8),
+        backgroundColor: AppColors.backgroundLight.withValues(alpha: 0.8),
         selectedItemColor: AppColors.primary,
         unselectedItemColor: AppColors.subtleLight,
         type: BottomNavigationBarType.fixed,
@@ -2303,7 +2250,9 @@ class _NGOHomeDashboardState extends State<NGOHomeDashboard>
         ],
         currentIndex: 0,
         onTap: (index) {
-          if (index == 4) Navigator.pushNamed(context, AppStrings.routeNGOProfile);
+          if (index == 4) {
+            Navigator.pushNamed(context, AppStrings.routeNGOProfile);
+          }
         },
       ),
     );
@@ -2318,8 +2267,7 @@ class CreateDonationScreen extends StatefulWidget {
   State<CreateDonationScreen> createState() => _CreateDonationScreenState();
 }
 
-class _CreateDonationScreenState extends State<CreateDonationScreen> 
-    with StatePreservationMixin {
+class _CreateDonationScreenState extends State<CreateDonationScreen> {
   
   final _formKey = GlobalKey<FormState>();
   String? _foodType;
@@ -2446,7 +2394,7 @@ class _CreateDonationScreenState extends State<CreateDonationScreen>
               Text('Food Type', style: Theme.of(context).textTheme.labelLarge),
               const SizedBox(height: 8),
               DropdownButtonFormField<String>(
-                value: _foodType,
+                initialValue: _foodType,
                 decoration: const InputDecoration(hintText: 'Select Food Type'),
                 items: const <String>['Fruits & Vegetables', 'Packaged Meals', 'Bakery Items', 'Dairy Products']
                     .map<DropdownMenuItem<String>>((String value) {
@@ -2552,17 +2500,15 @@ class _CreateDonationScreenState extends State<CreateDonationScreen>
               const SizedBox(height: 32),
               ElevatedButton(
                 onPressed: _loading ? null : _submitDonation,
-                                    style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.all<Color>(Colors.green),
-                      foregroundColor: MaterialStateProperty.all<Color>(Colors.black),
-                      minimumSize: MaterialStateProperty.all<Size>(const Size(double.infinity, 56)),
-                      shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                        RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      elevation: MaterialStateProperty.all<double>(0),
-                    ),),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.black,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  elevation: 0,
+                  minimumSize: const Size(double.infinity, 56),
+                ),
                 child: _loading ? const CircularProgressIndicator() : const Text('Create Donation'),
               ),
             ],
@@ -2662,17 +2608,14 @@ class _ViewDonationsScreenState extends State<ViewDonationsScreen>
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
-                                style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.all<Color>(Colors.green),
-                      foregroundColor: MaterialStateProperty.all<Color>(Colors.black),
-                      minimumSize: MaterialStateProperty.all<Size>(const Size(double.infinity, 56)),
-                      shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                        RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      elevation: MaterialStateProperty.all<double>(0),
-                    ),,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              elevation: 0,
+            ),
             child: const Text('Delete'),
           ),
         ],
@@ -3077,19 +3020,14 @@ class _DonorProfileScreenState extends State<DonorProfileScreen>
                 if (!mounted) return;
                 Navigator.pushNamedAndRemoveUntil(context, AppStrings.routeRoleSelection, (route) => false);
               },
-                                  style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.all<Color>(Colors.green),
-                      foregroundColor: MaterialStateProperty.all<Color>(Colors.black),
-                      minimumSize: MaterialStateProperty.all<Size>(const Size(double.infinity, 56)),
-                      shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                        RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      elevation: MaterialStateProperty.all<double>(0),
-                    ),,
-                backgroundColor: Colors.red.withOpacity(0.1),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red.withValues(alpha: 0.1),
                 foregroundColor: Colors.red,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                elevation: 0,
+                minimumSize: const Size(double.infinity, 56),
               ),
               child: const Text('Log Out'),
             ),
@@ -3186,7 +3124,7 @@ class _NGOProfileScreenState extends State<NGOProfileScreen>
                   children: [
                     Text('Notifications', style: Theme.of(context).textTheme.titleMedium),
                     const Spacer(),
-                    Switch(value: true, onChanged: (_) {}, activeColor: AppColors.primary),
+                    Switch(value: true, onChanged: (_) {}, activeTrackColor: AppColors.primary),
                   ],
                 ),
               ),
@@ -3198,19 +3136,14 @@ class _NGOProfileScreenState extends State<NGOProfileScreen>
                 if (!mounted) return;
                 Navigator.pushNamedAndRemoveUntil(context, AppStrings.routeRoleSelection, (route) => false);
               },
-                                  style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.all<Color>(Colors.green),
-                      foregroundColor: MaterialStateProperty.all<Color>(Colors.black),
-                      minimumSize: MaterialStateProperty.all<Size>(const Size(double.infinity, 56)),
-                      shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                        RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      elevation: MaterialStateProperty.all<double>(0),
-                    ),,
-                backgroundColor: Colors.red.withOpacity(0.1),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red.withValues(alpha: 0.1),
                 foregroundColor: Colors.red,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                elevation: 0,
+                minimumSize: const Size(double.infinity, 56),
               ),
               child: const Text('Log Out'),
             ),
@@ -3331,19 +3264,14 @@ class _ReceiverProfileScreenState extends State<ReceiverProfileScreen>
                 if (!mounted) return;
                 Navigator.pushNamedAndRemoveUntil(context, AppStrings.routeRoleSelection, (route) => false);
               },
-                                  style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.all<Color>(Colors.green),
-                      foregroundColor: MaterialStateProperty.all<Color>(Colors.black),
-                      minimumSize: MaterialStateProperty.all<Size>(const Size(double.infinity, 56)),
-                      shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                        RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      elevation: MaterialStateProperty.all<double>(0),
-                    ),,
-                backgroundColor: Colors.red.withOpacity(0.1),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red.withValues(alpha: 0.1),
                 foregroundColor: Colors.red,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                elevation: 0,
+                minimumSize: const Size(double.infinity, 56),
               ),
               child: const Text('Log Out'),
             ),
@@ -3362,8 +3290,7 @@ class CreateRequestScreen extends StatefulWidget {
   State<CreateRequestScreen> createState() => _CreateRequestScreenState();
 }
 
-class _CreateRequestScreenState extends State<CreateRequestScreen> 
-    with StatePreservationMixin {
+class _CreateRequestScreenState extends State<CreateRequestScreen> {
   
   final _formKey = GlobalKey<FormState>();
   String? _foodType;
@@ -3432,7 +3359,7 @@ class _CreateRequestScreenState extends State<CreateRequestScreen>
               Text('Food Type', style: Theme.of(context).textTheme.labelLarge),
               const SizedBox(height: 8),
               DropdownButtonFormField<String>(
-                value: _foodType,
+                initialValue: _foodType,
                 decoration: const InputDecoration(hintText: 'Select Food Type'),
                 items: const <String>['Vegetables', 'Fruits', 'Dairy Products', 'Bakery Items']
                     .map<DropdownMenuItem<String>>((String value) {
@@ -3462,23 +3389,21 @@ class _CreateRequestScreenState extends State<CreateRequestScreen>
               const SizedBox(height: 8),
               TextFormField(
                 controller: _notesController,
-                  maxLines: 4,
+                maxLines: 4,
                 decoration: const InputDecoration(hintText: 'Any special instructions? (optional)'),
-                ),
+              ),
                 const SizedBox(height: 32),
               ElevatedButton(
                 onPressed: _loading ? null : _submitRequest,
-                                    style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.all<Color>(Colors.green),
-                      foregroundColor: MaterialStateProperty.all<Color>(Colors.black),
-                      minimumSize: MaterialStateProperty.all<Size>(const Size(double.infinity, 56)),
-                      shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                        RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      elevation: MaterialStateProperty.all<double>(0),
-                    ),, shape: const StadiumBorder()),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                  foregroundColor: Colors.black,
+                  minimumSize: const Size(double.infinity, 56),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  elevation: 0,
+                ),
                 child: _loading ? const CircularProgressIndicator() : const Text('Submit Request'),
               ),
             ],
