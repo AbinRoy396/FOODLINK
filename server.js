@@ -91,6 +91,26 @@ const authenticateToken = (req, res, next) => {
 };
 
 // Routes
+// Health check endpoint
+app.get("/api/health", (req, res) => {
+  db.get("SELECT COUNT(*) as count FROM users", (err, row) => {
+    if (err) {
+      return res.status(500).json({ 
+        status: "error", 
+        message: "Database connection failed",
+        error: err.message 
+      });
+    }
+    res.json({ 
+      status: "ok", 
+      message: "FoodLink API is running",
+      database: "connected",
+      users: row.count,
+      timestamp: new Date().toISOString()
+    });
+  });
+});
+
 // 1. User Registration
 app.post("/api/register", async (req, res) => {
   const { email, password, name, role, address, phone, description, familySize } = req.body;
