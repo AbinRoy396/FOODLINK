@@ -1,12 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:provider/provider.dart';
 import '../models/donation_model.dart';
 import '../services/api_service.dart';
 import '../services/location_service.dart';
+import '../services/theme_provider.dart';
 import '../utils/app_colors.dart';
 import '../utils/app_strings.dart';
+import '../utils/enhanced_animations.dart';
+import '../widgets/enhanced_ui_widgets.dart';
 import 'dart:async';
+import 'dart:math';
 
 class EnhancedMapView extends StatefulWidget {
   const EnhancedMapView({super.key});
@@ -123,19 +129,18 @@ class _EnhancedMapViewState extends State<EnhancedMapView> {
   }
 
   double _getMarkerColor(String status) {
-    switch (status) {
-      case AppStrings.statusVerified:
-        return BitmapDescriptor.hueGreen;
-      case AppStrings.statusPending:
-        return BitmapDescriptor.hueOrange;
-      case AppStrings.statusAllocated:
-        return BitmapDescriptor.hueViolet;
-      case AppStrings.statusDelivered:
-        return BitmapDescriptor.hueBlue;
-      case AppStrings.statusExpired:
-        return BitmapDescriptor.hueRed;
-      default:
-        return BitmapDescriptor.hueRed;
+    if (status == AppStrings.statusVerified) {
+      return BitmapDescriptor.hueGreen;
+    } else if (status == AppStrings.statusPending) {
+      return BitmapDescriptor.hueOrange;
+    } else if (status == AppStrings.statusAllocated) {
+      return BitmapDescriptor.hueViolet;
+    } else if (status == AppStrings.statusDelivered) {
+      return BitmapDescriptor.hueBlue;
+    } else if (status == AppStrings.statusExpired) {
+      return BitmapDescriptor.hueRed;
+    } else {
+      return BitmapDescriptor.hueRed;
     }
   }
 
@@ -605,19 +610,18 @@ class _EnhancedMapViewState extends State<EnhancedMapView> {
   }
 
   Color _getStatusColor(String status) {
-    switch (status) {
-      case AppStrings.statusPending:
-        return AppColors.statusPending;
-      case AppStrings.statusVerified:
-        return AppColors.statusVerified;
-      case AppStrings.statusAllocated:
-        return AppColors.statusAllocated;
-      case AppStrings.statusDelivered:
-        return AppColors.statusDelivered;
-      case AppStrings.statusExpired:
-        return AppColors.statusExpired;
-      default:
-        return AppColors.foregroundLight;
+    if (status == AppStrings.statusPending) {
+      return AppColors.statusPending;
+    } else if (status == AppStrings.statusVerified) {
+      return AppColors.statusVerified;
+    } else if (status == AppStrings.statusAllocated) {
+      return AppColors.statusAllocated;
+    } else if (status == AppStrings.statusDelivered) {
+      return AppColors.statusDelivered;
+    } else if (status == AppStrings.statusExpired) {
+      return AppColors.statusExpired;
+    } else {
+      return AppColors.foregroundLight;
     }
   }
 }

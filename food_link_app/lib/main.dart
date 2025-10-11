@@ -26,6 +26,10 @@ import 'screens/remaining_screens.dart';
 import 'screens/improved_dashboards.dart';
 import 'screens/ngo_dashboard_tabs.dart';
 import 'screens/receiver_dashboard_tabs.dart';
+import 'screens/create_donation_screen.dart';
+import 'screens/view_donations_screen.dart';
+import 'screens/create_request_screen.dart';
+import 'screens/donation_details_screen.dart';
 import 'utils/validators.dart';
 import 'user_state.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -290,7 +294,7 @@ class DonationListItem extends StatelessWidget {
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      donation.createdAt.split('T').first,
+                      '${donation.createdAt.day}/${donation.createdAt.month}/${donation.createdAt.year}',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: AppColors.subtleLight,
                       ),
@@ -463,7 +467,7 @@ class _FoodLinkAppState extends State<FoodLinkApp> with WidgetsBindingObserver {
         AppStrings.routeReceiverDashboard: (context) => const ImprovedReceiverDashboard(),
         AppStrings.routeNGODashboard: (context) => const ImprovedNGODashboard(),
         AppStrings.routeCreateDonation: (context) => const CreateDonationScreen(),
-        AppStrings.routeViewDonations: (context) => ViewDonationsScreen(),
+        AppStrings.routeViewDonations: (context) => const ViewDonationsScreen(),
         AppStrings.routeCreateRequest: (context) => const CreateRequestScreen(),
         AppStrings.routeTrackRequestStatus: (context) => const TrackRequestStatusScreen(),
         '/map': (context) => const MapScreen(),
@@ -2015,7 +2019,7 @@ class _DonorHomeDashboardState extends State<DonorHomeDashboard>
               isDark ? Icons.light_mode : Icons.dark_mode,
               color: fgColor.withValues(alpha: 0.7),
             ),
-            onPressed: () => context.read<ThemeProvider>().toggleTheme(),
+            onPressed: () => context.read<ThemeProvider>().toggleThemeWithAnimation(),
             tooltip: 'Toggle Theme',
           ),
           IconButton(
@@ -2175,7 +2179,7 @@ class _ReceiverHomeDashboardState extends State<ReceiverHomeDashboard>
               isDark ? Icons.light_mode : Icons.dark_mode,
               color: fgColor,
             ),
-            onPressed: () => context.read<ThemeProvider>().toggleTheme(),
+            onPressed: () => context.read<ThemeProvider>().toggleThemeWithAnimation(),
             tooltip: 'Toggle Theme',
           ),
           IconButton(
@@ -2312,7 +2316,7 @@ class _NGOHomeDashboardState extends State<NGOHomeDashboard>
               isDark ? Icons.light_mode : Icons.dark_mode,
               color: fgColor,
             ),
-            onPressed: () => context.read<ThemeProvider>().toggleTheme(),
+            onPressed: () => context.read<ThemeProvider>().toggleThemeWithAnimation(),
             tooltip: 'Toggle Theme',
           ),
           IconButton(
@@ -2788,7 +2792,7 @@ class _ViewDonationsScreenState extends State<ViewDonationsScreen>
       '🍽️ Food Type: ${donation.foodType}\n'
       '📦 Quantity: ${donation.quantity}\n'
       '📍 Pickup: ${donation.pickupAddress}\n'
-      '⏰ Expires: ${donation.expiryTime}\n'
+      '⏰ Expires: ${donation.expiryDate}\n'
       '✅ Status: ${donation.status}\n\n'
       'Help reduce food waste with FoodLink!',
       subject: 'Food Donation - ${donation.foodType}',

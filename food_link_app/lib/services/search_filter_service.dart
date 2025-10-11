@@ -36,7 +36,7 @@ class SearchFilterService {
 
     return donations.where((donation) {
       try {
-        final donationDate = DateTime.parse(donation.createdAt);
+        final donationDate = donation.createdAt;
         if (startDate != null && donationDate.isBefore(startDate)) {
           return false;
         }

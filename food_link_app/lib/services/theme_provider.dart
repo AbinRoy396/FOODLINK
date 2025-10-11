@@ -163,6 +163,22 @@ class ThemeProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  // Animated theme toggle with haptic feedback
+  void toggleThemeWithAnimation() {
+    // Add haptic feedback
+    HapticFeedback.lightImpact();
+    toggleTheme();
+  }
+
+  // Get current theme colors for dynamic UI
+  Color get primaryColor => const Color(0xFF11D452);
+  Color get backgroundColor => _isDarkMode ? const Color(0xFF102216) : const Color(0xFFF6F8F6);
+  Color get cardColor => _isDarkMode ? const Color(0xFF182E1F) : Colors.white;
+  Color get textColor => _isDarkMode ? const Color(0xFFE3E3E3) : const Color(0xFF111813);
+  Color get subtleTextColor => _isDarkMode ? const Color(0xFFB0B0B0) : const Color(0xFF666666);
+  Color get borderColor => _isDarkMode ? const Color(0xFF2A4A32) : const Color(0xFFE0E0E0);
+  Color get shadowColor => _isDarkMode ? Colors.black26 : Colors.grey.withOpacity(0.1);
+
   ThemeData getTheme(BuildContext context) {
     return _isDarkMode ? darkTheme : lightTheme;
   }

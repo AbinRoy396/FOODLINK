@@ -22,7 +22,7 @@ class DonationDetailScreen extends StatelessWidget {
                 '🍽️ Food Type: ${donation.foodType}\n'
                 '📦 Quantity: ${donation.quantity}\n'
                 '📍 Pickup: ${donation.pickupAddress}\n'
-                '⏰ Expires: ${donation.expiryTime}\n'
+                '⏰ Expires: ${donation.expiryDate}\n'
                 '✅ Status: ${donation.status}\n\n'
                 'Help reduce food waste with FoodLink!',
                 subject: 'Food Donation - ${donation.foodType}',
@@ -90,12 +90,12 @@ class DonationDetailScreen extends StatelessWidget {
             _DetailRow(
               icon: Icons.access_time,
               label: 'Expiry Time',
-              value: donation.expiryTime,
+              value: donation.expiryDate,
             ),
             _DetailRow(
               icon: Icons.calendar_today,
               label: 'Created',
-              value: donation.createdAt.split('T').first,
+              value: '${donation.createdAt.day}/${donation.createdAt.month}/${donation.createdAt.year}',
             ),
           ],
         ),
