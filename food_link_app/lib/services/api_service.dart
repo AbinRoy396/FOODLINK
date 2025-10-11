@@ -9,7 +9,9 @@ import '/models/request_model.dart';
 import 'package:flutter/material.dart';
 
 class ApiService {
-  static const String baseUrl = "http://10.0.2.2:3000/api";
+  // Use 10.0.2.2 for emulator, or your computer's IP for physical device
+  // Change to your computer's IP when using physical device: http://192.168.x.x:3000/api
+  static const String baseUrl = "http://192.168.4.88:3000/api"; // Updated for physical device
   static const String _tokenKey = 'auth_token';
   static const int maxRetries = 3;
   static const Duration requestTimeout = Duration(seconds: 30);
@@ -292,7 +294,10 @@ class ApiService {
   static Future<List<DonationModel>> getUserDonations(int userId) async {
     try {
       final token = await _getToken();
-      if (token == null) throw Exception('No token');
+      if (token == null) {
+        debugPrint('No token available');
+        return []; // Return empty list instead of throwing
+      }
 
       final response = await http.get(
         Uri.parse('$baseUrl/donations/$userId'),
@@ -300,18 +305,18 @@ class ApiService {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
         },
-      );
+      ).timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body);
         return data.map((json) => DonationModel.fromJson(json)).toList();
       } else {
-        final error = jsonDecode(response.body)['error'] ?? 'Failed to get donations';
-        throw Exception(error);
+        debugPrint('Failed to get donations: ${response.statusCode}');
+        return []; // Return empty list on error
       }
     } catch (e) {
       debugPrint('Get user donations error: $e');
-      rethrow;
+      return []; // Return empty list instead of rethrowing
     }
   }
 
@@ -459,7 +464,10 @@ class ApiService {
   static Future<List<DonationModel>> getAllDonations() async {
     try {
       final token = await _getToken();
-      if (token == null) throw Exception('No token');
+      if (token == null) {
+        debugPrint('No token available');
+        return []; // Return empty list instead of throwing
+      }
 
       final response = await http.get(
         Uri.parse('$baseUrl/donations'),
@@ -467,18 +475,18 @@ class ApiService {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
         },
-      );
+      ).timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body);
         return data.map((json) => DonationModel.fromJson(json)).toList();
       } else {
-        final error = jsonDecode(response.body)['error'] ?? 'Failed to get donations';
-        throw Exception(error);
+        debugPrint('Failed to get all donations: ${response.statusCode}');
+        return []; // Return empty list on error
       }
     } catch (e) {
       debugPrint('Get all donations error: $e');
-      rethrow;
+      return []; // Return empty list instead of rethrowing
     }
   }
 

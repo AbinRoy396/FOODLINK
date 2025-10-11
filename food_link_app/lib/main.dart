@@ -18,13 +18,25 @@ import 'widgets/search_filter_widget.dart';
 import 'utils/app_strings.dart';
 import 'utils/app_colors.dart';
 import 'utils/error_handler.dart';
+import 'utils/animations.dart';
+import 'screens/map_view_screen.dart';
+import 'widgets/animated_widgets.dart';
 import 'screens/donation_detail_screen.dart';
+import 'screens/remaining_screens.dart';
+import 'screens/improved_dashboards.dart';
+import 'screens/ngo_dashboard_tabs.dart';
+import 'screens/receiver_dashboard_tabs.dart';
 import 'utils/validators.dart';
 import 'user_state.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:share_plus/share_plus.dart';
+import 'screens/improved_registration_screens.dart';
+import 'screens/complete_dashboards.dart';
+import 'screens/enhanced_map_view.dart';
+import 'screens/enhanced_login_screens.dart';
+import 'screens/enhanced_registrations.dart';
 
 class CustomCachedImage extends StatelessWidget {
   final String imageUrl;
@@ -433,6 +445,7 @@ class _FoodLinkAppState extends State<FoodLinkApp> with WidgetsBindingObserver {
         return MaterialApp(
           navigatorKey: navigatorKey,
           title: AppStrings.appName,
+          debugShowCheckedModeBanner: false, // Removes debug banner
           theme: themeProvider.lightTheme,
           darkTheme: themeProvider.darkTheme,
           themeMode: themeProvider.isDarkMode ? ThemeMode.dark : ThemeMode.light,
@@ -440,14 +453,15 @@ class _FoodLinkAppState extends State<FoodLinkApp> with WidgetsBindingObserver {
       routes: {
         AppStrings.routeHome: (context) => const FoodLinkSplashScreen(),
         AppStrings.routeRoleSelection: (context) => const UserRoleSelectionScreen(),
-        AppStrings.routeLogin: (context) => const LoginScreen(),
+        AppStrings.routeLogin: (context) => const EnhancedLoginScreen(),
         '/admin-login': (context) => const AdminLoginScreen(),
-        AppStrings.routeRegisterDonor: (context) => const DonorRegistrationScreen(),
-        AppStrings.routeRegisterNGO: (context) => const NGORegistrationScreen(),
-        AppStrings.routeRegisterReceiver: (context) => const ReceiverRegistrationScreen(),
-        AppStrings.routeDonorDashboard: (context) => const DonorHomeDashboard(),
-        AppStrings.routeReceiverDashboard: (context) => const ReceiverHomeDashboard(),
-        AppStrings.routeNGODashboard: (context) => const NGOHomeDashboard(),
+        '/admin-dashboard': (context) => const AdminDashboardScreen(),
+        AppStrings.routeRegisterDonor: (context) => const ImprovedDonorRegistrationScreen(),
+        AppStrings.routeRegisterNGO: (context) => const EnhancedNGORegistrationScreen(),
+        AppStrings.routeRegisterReceiver: (context) => const EnhancedReceiverRegistrationScreen(),
+        AppStrings.routeDonorDashboard: (context) => const ImprovedDonorDashboard(),
+        AppStrings.routeReceiverDashboard: (context) => const ImprovedReceiverDashboard(),
+        AppStrings.routeNGODashboard: (context) => const ImprovedNGODashboard(),
         AppStrings.routeCreateDonation: (context) => const CreateDonationScreen(),
         AppStrings.routeViewDonations: (context) => ViewDonationsScreen(),
         AppStrings.routeCreateRequest: (context) => const CreateRequestScreen(),
@@ -476,10 +490,12 @@ class _FoodLinkSplashScreenState extends State<FoodLinkSplashScreen> {
   @override
   void initState() {
     super.initState();
-    // Start offline sync listener once app starts
-    OfflineQueueService.ensureConnectivityListener((op) async {
-      await ApiService.syncOfflineQueue();
-      return true;
+    // Start offline sync listener once app starts (non-blocking)
+    Future.microtask(() {
+      OfflineQueueService.ensureConnectivityListener((op) async {
+        await ApiService.syncOfflineQueue();
+        return true;
+      });
     });
     _initializeApp();
   }
@@ -490,7 +506,7 @@ class _FoodLinkSplashScreenState extends State<FoodLinkSplashScreen> {
     
     if (!mounted) return;
     
-    await Future.delayed(const Duration(seconds: 2));
+    await Future.delayed(const Duration(milliseconds: 800));
     
     if (!mounted) return;
     
@@ -514,18 +530,7 @@ class _FoodLinkSplashScreenState extends State<FoodLinkSplashScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.backgroundLight,
-      body: Stack(
-        children: [
-          Positioned.fill(
-            child: Opacity(
-              opacity: 0.1,
-              child: CustomCachedImage(
-                imageUrl: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
-                fit: BoxFit.cover,
-              ),
-            ),
-          ),
-          Center(
+      body: Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -558,8 +563,6 @@ class _FoodLinkSplashScreenState extends State<FoodLinkSplashScreen> {
                 ),
               ],
             ),
-          ),
-        ],
       ),
     );
   }
@@ -669,6 +672,31 @@ class UserRoleSelectionScreen extends StatelessWidget {
                           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                         ),
                       ),
+                      const SizedBox(height: 32),
+                      // Login Link
+                      TextButton(
+                        onPressed: () => Navigator.pushNamed(context, AppStrings.routeLogin),
+                        child: Text(
+                          'Already have an account? Sign in',
+                          style: TextStyle(
+                            color: AppColors.primary,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      // Admin Login Link
+                      TextButton(
+                        onPressed: () => Navigator.pushNamed(context, '/admin-login'),
+                        child: Text(
+                          'Admin Login',
+                          style: TextStyle(
+                            color: AppColors.subtleLight,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -737,6 +765,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
   String? _selectedRole;
   bool _loading = false;
+  bool _obscurePassword = true;
 
   @override
   Widget build(BuildContext context) {
@@ -852,7 +881,7 @@ class _LoginScreenState extends State<LoginScreen> {
             const SizedBox(height: 4),
             TextFormField(
               controller: _passwordController,
-              obscureText: true,
+              obscureText: _obscurePassword,
               decoration: InputDecoration(
                 hintText: '••••••••',
                 border: OutlineInputBorder(
@@ -868,6 +897,13 @@ class _LoginScreenState extends State<LoginScreen> {
                   borderSide: const BorderSide(color: AppColors.primary, width: 2),
                 ),
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                    color: AppColors.subtleLight,
+                  ),
+                  onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                ),
               ),
               validator: (value) =>
                   (value == null || value.isEmpty) ? 'Please enter your password' : null,
@@ -1055,6 +1091,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _loading = false;
+  bool _obscurePassword = true;
 
   @override
   void dispose() {
@@ -1209,7 +1246,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                                 const SizedBox(height: 4),
                                 TextFormField(
                                   controller: _passwordController,
-                                  obscureText: true,
+                                  obscureText: _obscurePassword,
                                   decoration: InputDecoration(
                                     hintText: '••••••••',
                                     border: OutlineInputBorder(
@@ -1225,6 +1262,13 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                                       borderSide: BorderSide(color: AppColors.primary, width: 2),
                                     ),
                                     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                                    suffixIcon: IconButton(
+                                      icon: Icon(
+                                        _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                                        color: AppColors.subtleLight,
+                                      ),
+                                      onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                                    ),
                                   ),
                                   validator: (value) =>
                                       (value == null || value.isEmpty) ? 'Please enter password' : null,
@@ -1295,6 +1339,7 @@ class _DonorRegistrationScreenState extends State<DonorRegistrationScreen> {
   final _passwordController = TextEditingController();
   final _addressController = TextEditingController();
   bool _loading = false;
+  bool _obscurePassword = true;
 
   Future<void> _register() async {
     if (_formKey.currentState!.validate()) {
@@ -1392,7 +1437,7 @@ class _DonorRegistrationScreenState extends State<DonorRegistrationScreen> {
                       // Password Field
                       TextFormField(
                         controller: _passwordController,
-                        obscureText: true,
+                        obscureText: _obscurePassword,
                         decoration: InputDecoration(
                           hintText: 'Password',
                           filled: true,
@@ -1402,6 +1447,13 @@ class _DonorRegistrationScreenState extends State<DonorRegistrationScreen> {
                             borderSide: BorderSide.none,
                           ),
                           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                              color: AppColors.subtleLight,
+                            ),
+                            onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                          ),
                         ),
                         validator: (value) => value?.isEmpty ?? true ? 'Enter password' : null,
                       ),
@@ -1499,6 +1551,7 @@ class _NGORegistrationScreenState extends State<NGORegistrationScreen> {
   final _passwordController = TextEditingController();
   final _addressController = TextEditingController();
   bool _loading = false;
+  bool _obscurePassword = true;
 
   Future<void> _register() async {
     if (_formKey.currentState!.validate()) {
@@ -1707,6 +1760,7 @@ class _ReceiverRegistrationScreenState extends State<ReceiverRegistrationScreen>
   final _passwordController = TextEditingController();
   final _addressController = TextEditingController();
   bool _loading = false;
+  bool _obscurePassword = true;
 
   Future<void> _register() async {
     if (_formKey.currentState!.validate()) {
@@ -1924,21 +1978,48 @@ class _DonorHomeDashboardState extends State<DonorHomeDashboard>
       return const Scaffold(body: Center(child: Text('Please log in')));
     }
 
+    final isDark = context.watch<ThemeProvider>().isDarkMode;
+    final bgColor = isDark ? AppColors.backgroundDark : AppColors.backgroundLight;
+    final fgColor = isDark ? AppColors.foregroundDark : AppColors.foregroundLight;
+
     return Scaffold(
-      backgroundColor: AppColors.backgroundLight,
+      backgroundColor: bgColor,
       appBar: AppBar(
-        backgroundColor: AppColors.backgroundLight.withValues(alpha: 0.8),
+        backgroundColor: bgColor.withValues(alpha: 0.8),
         elevation: 0,
         title: Text(
           AppStrings.appName,
           style: TextStyle(
             fontWeight: FontWeight.bold,
-            color: AppColors.foregroundLight.withValues(alpha: 0.9),
+            color: fgColor.withValues(alpha: 0.9),
           ),
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.notifications_outlined, color: AppColors.foregroundLight.withValues(alpha: 0.7)),
+            icon: Icon(Icons.map_outlined, color: fgColor.withValues(alpha: 0.7)),
+            onPressed: () {
+              Navigator.push(
+                context,
+                SlidePageRoute(
+                  page: MapViewScreen(
+                    donations: [],
+                    initialPosition: const LatLng(10.5276, 76.2144), // Thrissur, Kerala
+                  ),
+                ),
+              );
+            },
+            tooltip: 'View Map',
+          ),
+          IconButton(
+            icon: Icon(
+              isDark ? Icons.light_mode : Icons.dark_mode,
+              color: fgColor.withValues(alpha: 0.7),
+            ),
+            onPressed: () => context.read<ThemeProvider>().toggleTheme(),
+            tooltip: 'Toggle Theme',
+          ),
+          IconButton(
+            icon: Icon(Icons.notifications_outlined, color: fgColor.withValues(alpha: 0.7)),
             onPressed: () {},
           ),
         ],
@@ -1956,7 +2037,7 @@ class _DonorHomeDashboardState extends State<DonorHomeDashboard>
                     'Welcome, ${user.name}',
                     style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                       fontWeight: FontWeight.bold,
-                      color: AppColors.foregroundLight.withValues(alpha: 0.9),
+                      color: fgColor.withValues(alpha: 0.9),
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -2057,21 +2138,48 @@ class _ReceiverHomeDashboardState extends State<ReceiverHomeDashboard>
       return const Scaffold(body: Center(child: Text('Please log in')));
     }
 
+    final isDark = context.watch<ThemeProvider>().isDarkMode;
+    final bgColor = isDark ? AppColors.backgroundDark : AppColors.backgroundLight;
+    final fgColor = isDark ? AppColors.foregroundDark : AppColors.foregroundLight;
+
     return Scaffold(
-      backgroundColor: AppColors.backgroundLight,
+      backgroundColor: bgColor,
       appBar: AppBar(
-        backgroundColor: AppColors.backgroundLight.withValues(alpha: 0.8),
+        backgroundColor: bgColor.withValues(alpha: 0.8),
         elevation: 0,
         title: Text(
           AppStrings.appName,
           style: TextStyle(
             fontWeight: FontWeight.bold,
-            color: AppColors.foregroundLight,
+            color: fgColor,
           ),
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.notifications_outlined, color: AppColors.foregroundLight),
+            icon: Icon(Icons.map_outlined, color: fgColor),
+            onPressed: () {
+              Navigator.push(
+                context,
+                SlidePageRoute(
+                  page: MapViewScreen(
+                    donations: [],
+                    initialPosition: const LatLng(10.5276, 76.2144), // Thrissur, Kerala
+                  ),
+                ),
+              );
+            },
+            tooltip: 'View Map',
+          ),
+          IconButton(
+            icon: Icon(
+              isDark ? Icons.light_mode : Icons.dark_mode,
+              color: fgColor,
+            ),
+            onPressed: () => context.read<ThemeProvider>().toggleTheme(),
+            tooltip: 'Toggle Theme',
+          ),
+          IconButton(
+            icon: Icon(Icons.notifications_outlined, color: fgColor),
             onPressed: () {},
           ),
         ],
@@ -2085,7 +2193,7 @@ class _ReceiverHomeDashboardState extends State<ReceiverHomeDashboard>
               'Welcome, ${user.name}',
               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                 fontWeight: FontWeight.bold,
-                color: AppColors.foregroundLight,
+                color: fgColor,
               ),
             ),
             const SizedBox(height: 24),
@@ -2167,21 +2275,48 @@ class _NGOHomeDashboardState extends State<NGOHomeDashboard>
       return const Scaffold(body: Center(child: Text('Please log in')));
     }
 
+    final isDark = context.watch<ThemeProvider>().isDarkMode;
+    final bgColor = isDark ? AppColors.backgroundDark : AppColors.backgroundLight;
+    final fgColor = isDark ? AppColors.foregroundDark : AppColors.foregroundLight;
+
     return Scaffold(
-      backgroundColor: AppColors.backgroundLight,
+      backgroundColor: bgColor,
       appBar: AppBar(
-        backgroundColor: AppColors.backgroundLight.withValues(alpha: 0.8),
+        backgroundColor: bgColor.withValues(alpha: 0.8),
         elevation: 0,
         title: Text(
           AppStrings.appName,
           style: TextStyle(
             fontWeight: FontWeight.bold,
-            color: AppColors.foregroundLight,
+            color: fgColor,
           ),
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.notifications_outlined, color: AppColors.foregroundLight),
+            icon: Icon(Icons.map_outlined, color: fgColor),
+            onPressed: () {
+              Navigator.push(
+                context,
+                SlidePageRoute(
+                  page: MapViewScreen(
+                    donations: [],
+                    initialPosition: const LatLng(10.5276, 76.2144), // Thrissur, Kerala
+                  ),
+                ),
+              );
+            },
+            tooltip: 'View Map',
+          ),
+          IconButton(
+            icon: Icon(
+              isDark ? Icons.light_mode : Icons.dark_mode,
+              color: fgColor,
+            ),
+            onPressed: () => context.read<ThemeProvider>().toggleTheme(),
+            tooltip: 'Toggle Theme',
+          ),
+          IconButton(
+            icon: Icon(Icons.notifications_outlined, color: fgColor),
             onPressed: () {},
           ),
         ],
@@ -2195,7 +2330,7 @@ class _NGOHomeDashboardState extends State<NGOHomeDashboard>
               'Dashboard',
               style: Theme.of(context).textTheme.displaySmall?.copyWith(
                 fontWeight: FontWeight.bold,
-                color: AppColors.foregroundLight,
+                color: fgColor,
                 fontSize: 28,
               ),
             ),

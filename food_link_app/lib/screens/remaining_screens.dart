@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/api_service.dart';
-import '../services/state_preservation_mixin.dart';
-import '../models/app_strings.dart';
-import '../theme/app_colors.dart';
+import '../utils/app_strings.dart';
+import '../utils/app_colors.dart';
+import '../user_state.dart';
 
 // --- View Donations Screen ---
 class ViewDonationsScreen extends StatefulWidget {
@@ -213,7 +213,9 @@ class _NGOTransactionsScreenState extends State<NGOTransactionsScreen>
     try {
       final stateUser = context.read<UserState>().user;
       if (stateUser != null) {
-        transactions = await ApiService.getNGOTransactions(stateUser.id);
+        // TODO: Implement getNGOTransactions API endpoint
+        // For now, returning empty list
+        transactions = [];
         error = null;
       } else {
         error = 'NGO not logged in';

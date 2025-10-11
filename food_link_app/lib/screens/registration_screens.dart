@@ -6,6 +6,7 @@ import '../utils/app_strings.dart';
 import '../utils/app_colors.dart';
 import '../utils/validators.dart';
 import '../main.dart'; // For StatePreservationMixin
+import 'package:flutter/services.dart';
 
 // --- Registration Screens ---
 
@@ -16,8 +17,7 @@ class DonorRegistrationScreen extends StatefulWidget {
   State<DonorRegistrationScreen> createState() => _DonorRegistrationScreenState();
 }
 
-class _DonorRegistrationScreenState extends State<DonorRegistrationScreen>
-    with StatePreservationMixin {
+class _DonorRegistrationScreenState extends State<DonorRegistrationScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
@@ -25,6 +25,9 @@ class _DonorRegistrationScreenState extends State<DonorRegistrationScreen>
   final _phoneController = TextEditingController();
   final _addressController = TextEditingController();
   bool _loading = false;
+  bool _obscurePassword = true;
+  String _passwordStrength = '';
+  Color _passwordStrengthColor = Colors.grey;
 
   @override
   void dispose() {
@@ -110,11 +113,33 @@ class _DonorRegistrationScreenState extends State<DonorRegistrationScreen>
               ElevatedButton(
                 onPressed: _loading ? null : _register,
                 style: ElevatedButton.styleFrom(
-                  minimumSize: const Size(double.infinity, 48),
+                  minimumSize: const Size(double.infinity, 56),
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.black,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
                 child: _loading
-                    ? const CircularProgressIndicator()
-                    : const Text('Register as Donor'),
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
+                        ),
+                      )
+                    : const Text(
+                        'Register as Donor',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: TextButton(
+                  onPressed: () => Navigator.pushReplacementNamed(context, AppStrings.routeLogin),
+                  child: const Text('Already have an account? Login'),
+                ),
               ),
             ],
           ),
@@ -139,10 +164,43 @@ class _DonorRegistrationScreenState extends State<DonorRegistrationScreen>
       ),
       validator: (value) {
         if (value == null || value.isEmpty) {
-          return 'Please enter $label.toLowerCase()';
+          return 'Please enter ${label.toLowerCase()}';
         }
         if (label.toLowerCase().contains('email') && !Validators.isValidEmail(value)) {
           return 'Please enter a valid email';
+        }
+        return null;
+      },
+    );
+  }
+
+  Widget _buildPasswordField() {
+    return TextFormField(
+      controller: _passwordController,
+      obscureText: _obscurePassword,
+      onChanged: _checkPasswordStrength,
+      decoration: InputDecoration(
+        labelText: 'Password',
+        prefixIcon: const Icon(Icons.lock, color: AppColors.subtleLight),
+        suffixIcon: IconButton(
+          icon: Icon(
+            _obscurePassword ? Icons.visibility_off : Icons.visibility,
+            color: AppColors.subtleLight,
+          ),
+          onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+        helperText: 'Use 8+ characters with uppercase, numbers, and symbols',
+        helperMaxLines: 2,
+      ),
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please enter a password';
+        }
+        if (value.length < 8) {
+          return 'Password must be at least 8 characters';
         }
         return null;
       },
@@ -157,8 +215,7 @@ class NGORegistrationScreen extends StatefulWidget {
   State<NGORegistrationScreen> createState() => _NGORegistrationScreenState();
 }
 
-class _NGORegistrationScreenState extends State<NGORegistrationScreen>
-    with StatePreservationMixin {
+class _NGORegistrationScreenState extends State<NGORegistrationScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
@@ -303,8 +360,7 @@ class ReceiverRegistrationScreen extends StatefulWidget {
   State<ReceiverRegistrationScreen> createState() => _ReceiverRegistrationScreenState();
 }
 
-class _ReceiverRegistrationScreenState extends State<ReceiverRegistrationScreen>
-    with StatePreservationMixin {
+class _ReceiverRegistrationScreenState extends State<ReceiverRegistrationScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();

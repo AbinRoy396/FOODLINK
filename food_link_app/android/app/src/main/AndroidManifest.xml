@@ -9,7 +9,7 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     
     <application
-        android:label="food_link_app"
+        android:label="Food Link"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
@@ -39,6 +39,11 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+        
+        <!-- Google Maps API Key - Replace with your own key from https://console.cloud.google.com/ -->
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyBkDxF8qZ9X7Y6vW5tU4sR3qP2oN1mL0kJ"/>
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and

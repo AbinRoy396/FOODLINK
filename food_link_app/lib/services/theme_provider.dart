@@ -1,9 +1,47 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ThemeProvider extends ChangeNotifier {
   bool _isDarkMode = false;
+  static const String _themeKey = 'theme_mode';
 
   bool get isDarkMode => _isDarkMode;
+
+  ThemeProvider() {
+    _loadThemePreference();
+  }
+
+  Future<void> _loadThemePreference() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      _isDarkMode = prefs.getBool(_themeKey) ?? false;
+      _updateSystemUI();
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error loading theme preference: $e');
+    }
+  }
+
+  Future<void> _saveThemePreference() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(_themeKey, _isDarkMode);
+    } catch (e) {
+      debugPrint('Error saving theme preference: $e');
+    }
+  }
+
+  void _updateSystemUI() {
+    SystemChrome.setSystemUIOverlayStyle(
+      SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: _isDarkMode ? Brightness.light : Brightness.dark,
+        systemNavigationBarColor: _isDarkMode ? const Color(0xFF102216) : const Color(0xFFF6F8F6),
+        systemNavigationBarIconBrightness: _isDarkMode ? Brightness.light : Brightness.dark,
+      ),
+    );
+  }
 
   // Common button style
   static final ButtonStyle _elevatedButtonStyle = ElevatedButton.styleFrom(
@@ -120,6 +158,12 @@ class ThemeProvider extends ChangeNotifier {
 
   void toggleTheme() {
     _isDarkMode = !_isDarkMode;
+    _updateSystemUI();
+    _saveThemePreference();
     notifyListeners();
+  }
+
+  ThemeData getTheme(BuildContext context) {
+    return _isDarkMode ? darkTheme : lightTheme;
   }
 }

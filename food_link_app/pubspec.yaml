@@ -38,6 +38,8 @@ dependencies:
   google_maps_flutter: ^2.6.1
   geolocator: ^10.1.0
   geocoding: ^2.1.1
+  flutter_map: ^6.1.0  # Free OpenStreetMap alternative
+  latlong2: ^0.9.0     # For coordinates
 
   # Push notifications (disabled - enable after Firebase setup)
   # firebase_core: ^2.24.2
@@ -69,7 +71,7 @@ flutter:
 flutter_launcher_icons:
   android: true
   ios: false
-  image_path: "assets/images/icon.png"
-  adaptive_icon_background: "#11D452"
-  adaptive_icon_foreground: "assets/images/icon_foreground.png"
+  image_path: "assets/images/food_link_icon.png.png"
+  adaptive_icon_background: "#11D452"  # FoodLink green
+  adaptive_icon_foreground: "assets/images/food_link_icon.png.png"
   min_sdk_android: 21

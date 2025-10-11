@@ -4,7 +4,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter/foundation.dart';
 
 class LocationService {
-  /// Get current location
+  /// Get current location with better error handling
   static Future<Position?> getCurrentLocation() async {
     try {
       // Check if location services are enabled
@@ -106,5 +106,100 @@ class LocationService {
         radiusKm: radiusKm,
       );
     }).toList();
+  }
+
+  /// Get current location with user-friendly error messages
+  static Future<Map<String, dynamic>> getCurrentLocationWithStatus() async {
+    try {
+      // Check if location services are enabled
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        return {
+          'success': false,
+          'error': 'Location services are disabled. Please enable location services.',
+          'position': null,
+        };
+      }
+
+      // Check location permissions
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          return {
+            'success': false,
+            'error': 'Location permission denied. Please allow location access.',
+            'position': null,
+          };
+        }
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        return {
+          'success': false,
+          'error': 'Location permission permanently denied. Please enable in settings.',
+          'position': null,
+        };
+      }
+
+      // Get current position
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+        timeLimit: const Duration(seconds: 10),
+      );
+
+      return {
+        'success': true,
+        'error': null,
+        'position': position,
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'error': 'Failed to get location: ${e.toString()}',
+        'position': null,
+      };
+    }
+  }
+
+  /// Open location settings
+  static Future<bool> openLocationSettings() async {
+    try {
+      return await Geolocator.openLocationSettings();
+    } catch (e) {
+      debugPrint('Error opening location settings: $e');
+      return false;
+    }
+  }
+
+  /// Open app settings
+  static Future<bool> openAppSettings() async {
+    try {
+      return await Geolocator.openAppSettings();
+    } catch (e) {
+      debugPrint('Error opening app settings: $e');
+      return false;
+    }
+  }
+
+  /// Get formatted address with fallback
+  static Future<String> getFormattedAddress(double lat, double lng) async {
+    try {
+      List<Placemark> placemarks = await placemarkFromCoordinates(lat, lng);
+      if (placemarks.isNotEmpty) {
+        final place = placemarks.first;
+        List<String> addressParts = [];
+        
+        if (place.street?.isNotEmpty == true) addressParts.add(place.street!);
+        if (place.locality?.isNotEmpty == true) addressParts.add(place.locality!);
+        if (place.administrativeArea?.isNotEmpty == true) addressParts.add(place.administrativeArea!);
+        if (place.country?.isNotEmpty == true) addressParts.add(place.country!);
+        
+        return addressParts.join(', ');
+      }
+    } catch (e) {
+      debugPrint('Reverse geocoding error: $e');
+    }
+    return 'Lat: ${lat.toStringAsFixed(4)}, Lng: ${lng.toStringAsFixed(4)}';
   }
 }
