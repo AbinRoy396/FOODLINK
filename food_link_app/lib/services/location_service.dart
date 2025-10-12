@@ -111,53 +111,83 @@ class LocationService {
   /// Get current location with user-friendly error messages
   static Future<Map<String, dynamic>> getCurrentLocationWithStatus() async {
     try {
+      debugPrint('🔍 Starting location request...');
+      
       // Check if location services are enabled
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      debugPrint('📍 Location services enabled: $serviceEnabled');
+      
       if (!serviceEnabled) {
+        debugPrint('❌ Location services disabled');
         return {
           'success': false,
-          'error': 'Location services are disabled. Please enable location services.',
+          'error': 'Location services are disabled. Please enable location services in your device settings.',
           'position': null,
+          'canOpenSettings': true,
         };
       }
 
-      // Check location permissions
+      // Check current permission status
       LocationPermission permission = await Geolocator.checkPermission();
+      debugPrint('🔐 Current permission status: $permission');
+
+      // Handle different permission states
       if (permission == LocationPermission.denied) {
+        debugPrint('🔐 Requesting location permission...');
         permission = await Geolocator.requestPermission();
+        debugPrint('🔐 Permission after request: $permission');
+        
         if (permission == LocationPermission.denied) {
           return {
             'success': false,
-            'error': 'Location permission denied. Please allow location access.',
+            'error': 'Location permission was denied. Please tap the location button again and allow access.',
             'position': null,
+            'canRetry': true,
           };
         }
       }
 
       if (permission == LocationPermission.deniedForever) {
+        debugPrint('❌ Permission denied forever');
         return {
           'success': false,
-          'error': 'Location permission permanently denied. Please enable in settings.',
+          'error': 'Location permission is permanently denied. Please enable it in app settings.',
           'position': null,
+          'canOpenSettings': true,
         };
       }
 
-      // Get current position
-      Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-        timeLimit: const Duration(seconds: 10),
-      );
+      if (permission == LocationPermission.whileInUse || permission == LocationPermission.always) {
+        debugPrint('✅ Permission granted, getting position...');
+        
+        // Get current position with timeout
+        Position position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high,
+          timeLimit: const Duration(seconds: 15),
+        );
+        
+        debugPrint('📍 Got position: ${position.latitude}, ${position.longitude}');
+
+        return {
+          'success': true,
+          'error': null,
+          'position': position,
+        };
+      }
 
       return {
-        'success': true,
-        'error': null,
-        'position': position,
+        'success': false,
+        'error': 'Location permission status unknown: $permission',
+        'position': null,
       };
+      
     } catch (e) {
+      debugPrint('❌ Location error: $e');
       return {
         'success': false,
         'error': 'Failed to get location: ${e.toString()}',
         'position': null,
+        'canRetry': true,
       };
     }
   }

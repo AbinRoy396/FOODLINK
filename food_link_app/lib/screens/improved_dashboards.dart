@@ -591,22 +591,22 @@ class _DonorDonationsTabState extends State<DonorDonationsTab> {
                                       child: const Icon(Icons.fastfood, color: AppColors.primary),
                                     ),
                                     title: Text(
-                                      donation['foodType'] ?? 'Food',
+                                      donation.foodType,
                                       style: const TextStyle(fontWeight: FontWeight.bold),
                                     ),
                                     subtitle: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
                                         const SizedBox(height: 4),
-                                        Text('Quantity: ${donation['quantity']}'),
-                                        Text('Status: ${donation['status']}'),
+                                        Text('Quantity: ${donation.quantity}'),
+                                        Text('Status: ${donation.status}'),
                                       ],
                                     ),
                                     trailing: Icon(
-                                      donation['status'] == 'Pending'
+                                      donation.status == 'Pending'
                                           ? Icons.pending
                                           : Icons.check_circle,
-                                      color: donation['status'] == 'Pending'
+                                      color: donation.status == 'Pending'
                                           ? Colors.orange
                                           : Colors.green,
                                     ),

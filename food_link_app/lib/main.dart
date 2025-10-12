@@ -28,6 +28,7 @@ import 'screens/ngo_dashboard_tabs.dart';
 import 'screens/receiver_dashboard_tabs.dart';
 import 'screens/create_donation_screen.dart';
 import 'screens/view_donations_screen.dart';
+import 'test_location.dart';
 import 'screens/create_request_screen.dart';
 import 'screens/donation_details_screen.dart';
 import 'utils/validators.dart';
@@ -1203,8 +1204,10 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                                 TextFormField(
                                   controller: _emailController,
                                   keyboardType: TextInputType.emailAddress,
+                                  style: TextStyle(color: AppColors.foregroundLight, fontSize: 16),
                                   decoration: InputDecoration(
                                     hintText: 'admin@foodlink.com',
+                                    hintStyle: TextStyle(color: AppColors.subtleLight),
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(8),
                                       borderSide: BorderSide(color: AppColors.borderLight),
@@ -1251,8 +1254,10 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                                 TextFormField(
                                   controller: _passwordController,
                                   obscureText: _obscurePassword,
+                                  style: TextStyle(color: AppColors.foregroundLight, fontSize: 16),
                                   decoration: InputDecoration(
                                     hintText: '••••••••',
+                                    hintStyle: TextStyle(color: AppColors.subtleLight),
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(8),
                                       borderSide: BorderSide(color: AppColors.borderLight),
@@ -2100,22 +2105,19 @@ class _DonorHomeDashboardState extends State<DonorHomeDashboard>
           }
         },
       ),
-      // Chat disabled - enable after Firebase setup
-      // floatingActionButton: FloatingActionButton(
-      //   onPressed: () {
-      //     Navigator.push(
-      //       context,
-      //       MaterialPageRoute(
-      //         builder: (context) => ChatListScreen(
-      //           currentUserId: user.id.toString(),
-      //           currentUserName: user.name,
-      //         ),
-      //       ),
-      //     );
-      //   },
-      //   child: const Icon(Icons.chat),
-      //   tooltip: 'Messages',
-      // ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const LocationTestScreen(),
+            ),
+          );
+        },
+        backgroundColor: AppColors.primary,
+        child: const Icon(Icons.location_on, color: Colors.white),
+        tooltip: 'Test Location',
+      ),
     );
   }
 }

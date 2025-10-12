@@ -4,6 +4,7 @@ import '../services/api_service.dart';
 import '../services/state_preservation_mixin.dart';
 import '../services/validators.dart';
 import '../services/error_handler.dart';
+import '../services/location_service.dart';
 import '../models/request_model.dart';
 import '../models/app_strings.dart';
 import '../theme/app_colors.dart';
@@ -24,6 +25,7 @@ class _CreateRequestScreenState extends State<CreateRequestScreen>
   final TextEditingController _quantityController = TextEditingController();
   final TextEditingController _deliveryAddressController = TextEditingController();
   bool _loading = false;
+  bool _gettingLocation = false;
 
   @override
   void dispose() {
@@ -58,6 +60,99 @@ class _CreateRequestScreenState extends State<CreateRequestScreen>
     } else {
       ErrorHandler.showWarning(context, 'Please fill all fields and select food type.');
     }
+  }
+
+  Future<void> _getCurrentLocation() async {
+    setState(() => _gettingLocation = true);
+    
+    try {
+      final locationResult = await LocationService.getCurrentLocationWithStatus();
+      
+      if (locationResult['success']) {
+        final position = locationResult['position'];
+        final address = await LocationService.getFormattedAddress(
+          position.latitude, 
+          position.longitude
+        );
+        
+        setState(() {
+          _deliveryAddressController.text = address;
+        });
+        
+        if (!mounted) return;
+        ErrorHandler.showSuccess(context, 'Location detected successfully!');
+      } else {
+        if (!mounted) return;
+        
+        // Handle different error types with appropriate actions
+        final error = locationResult['error'];
+        final canOpenSettings = locationResult['canOpenSettings'] ?? false;
+        final canRetry = locationResult['canRetry'] ?? false;
+        
+        if (canOpenSettings) {
+          _showLocationSettingsDialog(error);
+        } else if (canRetry) {
+          _showRetryDialog(error);
+        } else {
+          ErrorHandler.showError(context, error);
+        }
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ErrorHandler.showError(context, 'Failed to get location: $e');
+    } finally {
+      if (mounted) setState(() => _gettingLocation = false);
+    }
+  }
+
+  void _showLocationSettingsDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Location Access Required'),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () async {
+                Navigator.of(context).pop();
+                await LocationService.openAppSettings();
+              },
+              child: const Text('Open Settings'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showRetryDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Location Permission'),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _getCurrentLocation();
+              },
+              child: const Text('Try Again'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -148,6 +243,17 @@ class _CreateRequestScreenState extends State<CreateRequestScreen>
                       borderSide: BorderSide.none,
                     ),
                     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                    suffixIcon: IconButton(
+                      onPressed: _gettingLocation ? null : _getCurrentLocation,
+                      icon: _gettingLocation 
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.my_location, color: AppColors.primary),
+                      tooltip: 'Use current location',
+                    ),
                   ),
                   maxLines: 2,
                   validator: Validators.validateAddress,

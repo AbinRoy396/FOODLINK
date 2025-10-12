@@ -373,9 +373,10 @@ class _ImprovedDonorRegistrationScreenState extends State<ImprovedDonorRegistrat
           obscureText: obscureText,
           maxLines: maxLines,
           keyboardType: keyboardType,
-          style: const TextStyle(fontSize: 16),
+          style: const TextStyle(color: AppColors.foregroundLight, fontSize: 16),
           decoration: InputDecoration(
             hintText: hint,
+            hintStyle: TextStyle(color: AppColors.subtleLight),
             prefixIcon: Icon(icon, color: AppColors.subtleLight, size: 22),
             filled: true,
             fillColor: AppColors.cardLight,
@@ -430,9 +431,10 @@ class _ImprovedDonorRegistrationScreenState extends State<ImprovedDonorRegistrat
           controller: _passwordController,
           obscureText: _obscurePassword,
           onChanged: _checkPasswordStrength,
-          style: const TextStyle(fontSize: 16),
+          style: const TextStyle(color: AppColors.foregroundLight, fontSize: 16),
           decoration: InputDecoration(
             hintText: 'Enter a strong password',
+            hintStyle: TextStyle(color: AppColors.subtleLight),
             prefixIcon: const Icon(Icons.lock, color: AppColors.subtleLight, size: 22),
             suffixIcon: IconButton(
               icon: Icon(

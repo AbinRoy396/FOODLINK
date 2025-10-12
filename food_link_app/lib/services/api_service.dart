@@ -274,10 +274,10 @@ class ApiService {
           'Authorization': 'Bearer $token',
         },
         body: jsonEncode({
-          'foodType': foodType,
+          'food_type': foodType,
           'quantity': quantity,
-          'pickupAddress': pickupAddress,
-          'expiryTime': expiryTime,
+          'pickup_address': pickupAddress,
+          'expiry_time': expiryTime,
         }),
       );
 

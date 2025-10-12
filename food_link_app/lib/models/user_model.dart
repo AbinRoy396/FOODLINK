@@ -17,12 +17,12 @@ class UserModel {
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
-      id: json['id'],
+      id: json['user_id'] ?? json['id'], // Support both field names
       email: json['email'],
       name: json['name'],
       role: json['role'],
       address: json['address'],
-      createdAt: json['createdAt'],
+      createdAt: json['createdat'] ?? json['createdAt'] ?? json['created_at'] ?? DateTime.now().toIso8601String(),
     );
   }
 

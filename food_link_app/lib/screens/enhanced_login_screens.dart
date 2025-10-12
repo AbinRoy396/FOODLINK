@@ -331,8 +331,10 @@ class _EnhancedLoginScreenState extends State<EnhancedLoginScreen> with SingleTi
     return TextFormField(
       controller: _emailController,
       keyboardType: TextInputType.emailAddress,
+      style: TextStyle(color: AppColors.foregroundLight, fontSize: 16), // Fix text color
       decoration: InputDecoration(
         hintText: 'you@example.com',
+        hintStyle: TextStyle(color: AppColors.subtleLight),
         prefixIcon: Icon(Icons.email_outlined, color: AppColors.subtleLight),
         filled: true,
         fillColor: AppColors.cardLight,
@@ -370,8 +372,10 @@ class _EnhancedLoginScreenState extends State<EnhancedLoginScreen> with SingleTi
     return TextFormField(
       controller: _passwordController,
       obscureText: _obscurePassword,
+      style: TextStyle(color: AppColors.foregroundLight, fontSize: 16), // Fix text color
       decoration: InputDecoration(
         hintText: '••••••••',
+        hintStyle: TextStyle(color: AppColors.subtleLight),
         prefixIcon: Icon(Icons.lock_outlined, color: AppColors.subtleLight),
         suffixIcon: IconButton(
           icon: Icon(

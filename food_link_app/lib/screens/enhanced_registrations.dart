@@ -189,8 +189,10 @@ class _EnhancedNGORegistrationScreenState extends State<EnhancedNGORegistrationS
           controller: controller,
           maxLines: maxLines,
           keyboardType: keyboardType,
+          style: TextStyle(color: AppColors.foregroundLight, fontSize: 16),
           decoration: InputDecoration(
             hintText: hint,
+            hintStyle: TextStyle(color: AppColors.subtleLight),
             prefixIcon: Icon(icon, color: AppColors.subtleLight, size: 22),
             filled: true,
             fillColor: AppColors.cardLight,
@@ -219,8 +221,10 @@ class _EnhancedNGORegistrationScreenState extends State<EnhancedNGORegistrationS
         TextFormField(
           controller: _passwordController,
           obscureText: _obscurePassword,
+          style: TextStyle(color: AppColors.foregroundLight, fontSize: 16),
           decoration: InputDecoration(
             hintText: 'Enter a strong password',
+            hintStyle: TextStyle(color: AppColors.subtleLight),
             prefixIcon: const Icon(Icons.lock, color: AppColors.subtleLight, size: 22),
             suffixIcon: IconButton(
               icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility, color: AppColors.subtleLight),
@@ -427,8 +431,10 @@ class _EnhancedReceiverRegistrationScreenState extends State<EnhancedReceiverReg
           controller: controller,
           maxLines: maxLines,
           keyboardType: keyboardType,
+          style: TextStyle(color: AppColors.foregroundLight, fontSize: 16),
           decoration: InputDecoration(
             hintText: hint,
+            hintStyle: TextStyle(color: AppColors.subtleLight),
             prefixIcon: Icon(icon, color: AppColors.subtleLight, size: 22),
             filled: true,
             fillColor: AppColors.cardLight,
@@ -458,8 +464,10 @@ class _EnhancedReceiverRegistrationScreenState extends State<EnhancedReceiverReg
         TextFormField(
           controller: _passwordController,
           obscureText: _obscurePassword,
+          style: TextStyle(color: AppColors.foregroundLight, fontSize: 16),
           decoration: InputDecoration(
             hintText: 'Enter a strong password',
+            hintStyle: TextStyle(color: AppColors.subtleLight),
             prefixIcon: const Icon(Icons.lock, color: AppColors.subtleLight, size: 22),
             suffixIcon: IconButton(
               icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility, color: AppColors.subtleLight),

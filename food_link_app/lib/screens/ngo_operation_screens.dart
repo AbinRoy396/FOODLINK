@@ -132,13 +132,13 @@ class _VerifyDonationsScreenState extends State<VerifyDonationsScreen>
                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: [
                                       Text(
-                                        donation['foodType'] ?? 'Unknown',
+                                        donation.foodType,
                                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
                                           fontWeight: FontWeight.bold,
                                         ),
                                       ),
                                       Text(
-                                        donation['quantity'] ?? 'Unknown',
+                                        donation.quantity,
                                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                                           color: AppColors.subtleLight,
                                         ),
@@ -147,7 +147,7 @@ class _VerifyDonationsScreenState extends State<VerifyDonationsScreen>
                                   ),
                                   const SizedBox(height: 8),
                                   Text(
-                                    donation['pickupAddress'] ?? 'No address',
+                                    donation.pickupAddress,
                                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                                       color: AppColors.subtleLight,
                                     ),
@@ -157,7 +157,7 @@ class _VerifyDonationsScreenState extends State<VerifyDonationsScreen>
                                     children: [
                                       Expanded(
                                         child: ElevatedButton(
-                                          onPressed: () => _verifyDonation(donation['id'], true),
+                                          onPressed: () => _verifyDonation(donation.id, true),
                                           style: ElevatedButton.styleFrom(
                                             backgroundColor: AppColors.primary,
                                             foregroundColor: Colors.white,
@@ -171,7 +171,7 @@ class _VerifyDonationsScreenState extends State<VerifyDonationsScreen>
                                       const SizedBox(width: 12),
                                       Expanded(
                                         child: OutlinedButton(
-                                          onPressed: () => _verifyDonation(donation['id'], false),
+                                          onPressed: () => _verifyDonation(donation.id, false),
                                           style: OutlinedButton.styleFrom(
                                             foregroundColor: Colors.red,
                                             side: const BorderSide(color: Colors.red),
@@ -332,8 +332,8 @@ class _AllocateRequestsScreenState extends State<AllocateRequestsScreen>
                                               return Card(
                                                 margin: const EdgeInsets.only(bottom: 8),
                                                 child: ListTile(
-                                                  title: Text(donation['foodType'] ?? 'Unknown'),
-                                                  subtitle: Text(donation['quantity'] ?? 'Unknown'),
+                                                  title: Text(donation.foodType),
+                                                  subtitle: Text(donation.quantity),
                                                   trailing: const Icon(Icons.arrow_forward),
                                                 ),
                                               );

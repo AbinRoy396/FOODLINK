@@ -119,7 +119,7 @@ class _ViewDonationsScreenState extends State<ViewDonationsScreen>
                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: [
                                       Text(
-                                        donation['foodType'] ?? 'Unknown Food',
+                                        donation.foodType,
                                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
                                           fontWeight: FontWeight.bold,
                                           color: AppColors.foregroundLight,
@@ -144,13 +144,13 @@ class _ViewDonationsScreenState extends State<ViewDonationsScreen>
                                   ),
                                   const SizedBox(height: 8),
                                   Text(
-                                    'Quantity: ${donation['quantity'] ?? 'Unknown'}',
+                                    'Quantity: ${donation.quantity}',
                                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                                       color: AppColors.subtleLight,
                                     ),
                                   ),
                                   Text(
-                                    'Pickup: ${donation['pickupAddress'] ?? 'No address'}',
+                                    'Pickup: ${donation.pickupAddress}',
                                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                                       color: AppColors.subtleLight,
                                     ),
@@ -160,7 +160,7 @@ class _ViewDonationsScreenState extends State<ViewDonationsScreen>
                                     onPressed: () {
                                       // Request this donation
                                       ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(content: Text('Request for ${donation['foodType']} submitted!')),
+                                        SnackBar(content: Text('Request for ${donation.foodType} submitted!')),
                                       );
                                     },
                                     style: ElevatedButton.styleFrom(
